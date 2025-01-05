@@ -1,7 +1,6 @@
 using eConcours.Data;
 using eConcours.Services;
 using eConcours.Services_User;
-using GestionConcoursCore.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace eConcours
