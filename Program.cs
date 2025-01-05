@@ -1,23 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using eConcours.Data;
 using eConcours.Services;
 using eConcours.Services_User;
-using eConcours.Data;
-using eConcours.Models;
 using GestionConcoursCore.Services;
-using eConcours.Services_User;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Rotativa.AspNetCore;
-using Wkhtmltopdf.NetCore;
 
 namespace eConcours
 {
@@ -27,14 +12,17 @@ namespace eConcours
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Configuration
+            // Add services to the container
+            builder.Services.AddControllersWithViews();
+
+            // Access the configuration object
             var configuration = builder.Configuration;
 
-            // Ajouter les services au conteneur
+            // Configure the DbContext with the connection string
             builder.Services.AddDbContext<GestionConcourCoreDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("myconn")));
 
-            // Ajouter les services personnalisés
+
             builder.Services.AddTransient<ISearch3Service, Search3ServiceImp>();
             builder.Services.AddTransient<ISelectionService, SelectionServiceImp>();
             builder.Services.AddTransient<IPreselectionService, PreselectionServiceImp>();
@@ -48,39 +36,47 @@ namespace eConcours
             builder.Services.AddTransient<IIndexService, IndexServiceImp>();
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            // Ajouter les services de session
-            builder.Services.AddSession(options =>
+
+
+
+            // Configure cookies
+            builder.Services.Configure<CookiePolicyOptions>(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
+                options.CheckConsentNeeded = context => true; // Ask for user consent for cookies
+                options.MinimumSameSitePolicy = SameSiteMode.None; // Allow cross-site cookies
             });
 
-            // Ajouter Wkhtmltopdf
-            builder.Services.AddWkhtmltopdf();
-
-            // Configurer les contrôleurs et les vues
-            builder.Services.AddControllersWithViews();
+            // Add session services
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout
+                options.Cookie.HttpOnly = true; // Protect against client-side script access
+                options.Cookie.IsEssential = true; // Necessary for the app to function
+            });
 
             var app = builder.Build();
 
-            // Configurer le pipeline HTTP
+            // Configure the HTTP request pipeline
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                app.UseHsts(); // Activer HSTS
+                // The default HSTS value is 30 days. You may want to change this for production scenarios.
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSession();
+
             app.UseRouting();
+
+            // Use cookie policy
+            app.UseCookiePolicy();
+
+            // Use session
+            app.UseSession();
+
             app.UseAuthorization();
 
-            // Configurer Rotativa
-            RotativaConfiguration.Setup(app.Environment.WebRootPath, "../wwroot/Rotativa");
-
-            // Configurer les routes
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Landing}/{action=Index}/{id?}");
