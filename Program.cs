@@ -1,6 +1,7 @@
 using eConcours.Data;
 using eConcours.Services;
 using eConcours.Services_User;
+using GestionConcoursCore.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace eConcours
@@ -34,8 +35,6 @@ namespace eConcours
             builder.Services.AddTransient<IFiche, FicheImp>();
             builder.Services.AddTransient<IIndexService, IndexServiceImp>();
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
-
 
 
             // Configure cookies

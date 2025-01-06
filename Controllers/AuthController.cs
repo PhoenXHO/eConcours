@@ -3,6 +3,7 @@ using eConcours.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
 using System.Net;
+using System.Diagnostics;
 
 namespace eConcours.Controllers
 {
@@ -352,95 +353,103 @@ namespace eConcours.Controllers
                 ModelState.AddModelError("UniqueEmail", "Email need to be unique");
             }
 
-
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                candidat.DateInscription = DateTime.Now;
-                candidat.DateNaissance = DateTime.Now;
-                Random random = new Random();
-                const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
-                var chars = Enumerable.Range(0, 7)
-                    .Select(x => pool[random.Next(0, pool.Length)]);
-                var charsMatricule = Enumerable.Range(0, 8)
-                    .Select(ww => pool[random.Next(0, pool.Length)]);
-                candidat.Matricule = new string(charsMatricule.ToArray()).ToUpper();
-                candidat.Password = new string(chars.ToArray());
-                candidat.Verified = 0;
-                candidat.Photo = "icon.jpg";
-                _db.Candidats.Add(candidat);
-                _db.SaveChanges();
-
-                Diplome dip = new Diplome();
-                AnneeUniversitaire annUn = new AnneeUniversitaire();
-                Baccalaureat bac = new Baccalaureat();
-                ConcourEcrit concE = new ConcourEcrit();
-                ConcourOral concO = new ConcourOral();
-
-
-                //add row in diplome
-                dip.Cne = candidat.Cne;
-                _db.Diplomes.Add(dip);
-                _db.SaveChanges();
-
-                //add row in anne
-                annUn.Cne = candidat.Cne;
-                _db.AnneeUniversitaires.Add(annUn);
-                _db.SaveChanges();
-
-                //add row in bac
-                bac.Cne = candidat.Cne;
-                //bac.DateObtentionBac = DateTime.Now;
-                _db.Baccalaureats.Add(bac);
-                _db.SaveChanges();
-
-                //add in concours ecrit
-                concE.Cne = candidat.Cne;
-                _db.CouncourEcrits.Add(concE);
-                _db.SaveChanges();
-
-                //add in concours oral
-                concO.Cne = candidat.Cne;
-                _db.CouncourOrals.Add(concO);
-                _db.SaveChanges();
-
-
-                var fromAddress = new MailAddress("admin@gmail.com", "From ENSAS");
-                var toAddress = new MailAddress(candidat.Email, "To Name");
-                const string fromPassword = "adminconcours125498";
-                const string subject = "Récupération du mot de passe";
-                //string body = "<a href=\"http://localhost:49969/Auth/Verify?cne="+candidat.Cne+" \">Link</a><br /><p> this is the password : "+candidat.Password+"</p>";
-                string body = "<div class=\"container\"><div class=\"row\"><img src=\"https://lh3.googleusercontent.com/proxy/g_QnANEsQGJPGvR4haGBTi-kr2n32DU-eArBRKuJWtpgPCHQbz-RINzL6FzIc1TQs0a80Vfkaew6umTHHPQgHTE4l_g \" /></div><div class=\"row text-center\"><h2>Vous avez créer un compte dans la platforme d'acces au cycle d'ingénieur a ENSAS .</h2></div><div class=\"alert alert-danger\"><strong><span style=\"color:'red'\">Vous trouverez votre mot de pass au dessouss</span></strong><br></div><div class=\"row\"><div class=\"card\" style=\"width: 18rem;\"><div class=\"card-body\"><strong>Nom :</strong><span>" + candidat.Nom + "</span><br /><strong>Prenom : </strong><span>" + candidat.Prenom + "</span><br /><strong>CNE : </strong><span>" + candidat.Cne + "</span><br /><strong>CIN : </strong><span>" + candidat.Cin + "</span><br /><strong>Password : </strong><span>" + candidat.Password + "</span><br /></div></div></div></div>";
-
-
-                var smtp = new SmtpClient
+                // Log validation errors
+                foreach (var state in ModelState)
                 {
-                    Host = "smtp.gmail.com",
-                    Port = 587,
-                    EnableSsl = true,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
-                    Timeout = 60000
-                };
-                using (var message = new MailMessage(fromAddress, toAddress)
-                {
-                    Subject = subject,
-                    Body = body
-                })
-                {
-                    try
+                    foreach (var error in state.Value.Errors)
                     {
-                        message.IsBodyHtml = true;
-                        smtp.Send(message);
-                    }
-                    catch
-                    {
+                        Debug.WriteLine($"Property: {state.Key}, Error: {error.ErrorMessage}");
                     }
                 }
-
-                TempData["message"] = "Votre mot de passe est : '" + candidat.Password + "'." + " Vous le trouverez sur votre email aussi.";
-                return Redirect("Login");
+                return View(candidat);
             }
-            return View(candidat);
+
+            candidat.DateInscription = DateTime.Now;
+            candidat.DateNaissance = DateTime.Now;
+            Random random = new Random();
+            const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var chars = Enumerable.Range(0, 7)
+                .Select(x => pool[random.Next(0, pool.Length)]);
+            var charsMatricule = Enumerable.Range(0, 8)
+                .Select(ww => pool[random.Next(0, pool.Length)]);
+            candidat.Matricule = new string(charsMatricule.ToArray()).ToUpper();
+            candidat.Password = new string(chars.ToArray());
+            candidat.Verified = 0;
+            candidat.Photo = "icon.jpg";
+            _db.Candidats.Add(candidat);
+            _db.SaveChanges();
+
+            Diplome dip = new Diplome();
+            AnneeUniversitaire annUn = new AnneeUniversitaire();
+            Baccalaureat bac = new Baccalaureat();
+            ConcourEcrit concE = new ConcourEcrit();
+            ConcourOral concO = new ConcourOral();
+
+
+            //add row in diplome
+            dip.Cne = candidat.Cne;
+            _db.Diplomes.Add(dip);
+            _db.SaveChanges();
+
+            //add row in anne
+            annUn.Cne = candidat.Cne;
+            _db.AnneeUniversitaires.Add(annUn);
+            _db.SaveChanges();
+
+            //add row in bac
+            bac.Cne = candidat.Cne;
+            //bac.DateObtentionBac = DateTime.Now;
+            _db.Baccalaureats.Add(bac);
+            _db.SaveChanges();
+
+            //add in concours ecrit
+            concE.Cne = candidat.Cne;
+            _db.CouncourEcrits.Add(concE);
+            _db.SaveChanges();
+
+            //add in concours oral
+            concO.Cne = candidat.Cne;
+            _db.CouncourOrals.Add(concO);
+            _db.SaveChanges();
+
+
+            var fromAddress = new MailAddress("admin@gmail.com", "From ENSAS");
+            var toAddress = new MailAddress(candidat.Email, "To Name");
+            const string fromPassword = "adminconcours125498";
+            const string subject = "Récupération du mot de passe";
+            //string body = "<a href=\"http://localhost:49969/Auth/Verify?cne="+candidat.Cne+" \">Link</a><br /><p> this is the password : "+candidat.Password+"</p>";
+            string body = "<div class=\"container\"><div class=\"row\"><img src=\"https://lh3.googleusercontent.com/proxy/g_QnANEsQGJPGvR4haGBTi-kr2n32DU-eArBRKuJWtpgPCHQbz-RINzL6FzIc1TQs0a80Vfkaew6umTHHPQgHTE4l_g \" /></div><div class=\"row text-center\"><h2>Vous avez créer un compte dans la platforme d'acces au cycle d'ingénieur a ENSAS .</h2></div><div class=\"alert alert-danger\"><strong><span style=\"color:'red'\">Vous trouverez votre mot de pass au dessouss</span></strong><br></div><div class=\"row\"><div class=\"card\" style=\"width: 18rem;\"><div class=\"card-body\"><strong>Nom :</strong><span>" + candidat.Nom + "</span><br /><strong>Prenom : </strong><span>" + candidat.Prenom + "</span><br /><strong>CNE : </strong><span>" + candidat.Cne + "</span><br /><strong>CIN : </strong><span>" + candidat.Cin + "</span><br /><strong>Password : </strong><span>" + candidat.Password + "</span><br /></div></div></div></div>";
+
+
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Timeout = 60000
+            };
+            using (var message = new MailMessage(fromAddress, toAddress)
+            {
+                Subject = subject,
+                Body = body
+            })
+            {
+                try
+                {
+                    message.IsBodyHtml = true;
+                    smtp.Send(message);
+                }
+                catch
+                {
+                }
+            }
+
+            TempData["message"] = "Votre mot de passe est : '" + candidat.Password + "'." + " Vous le trouverez sur votre email aussi.";
+            return Redirect("Login");
         }
 
 
