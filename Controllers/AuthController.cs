@@ -443,8 +443,9 @@ namespace eConcours.Controllers
                     message.IsBodyHtml = true;
                     smtp.Send(message);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Debug.WriteLine("Email not sent: " + ex.Message);
                 }
             }
 
