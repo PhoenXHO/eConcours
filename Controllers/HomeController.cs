@@ -185,7 +185,7 @@ namespace GestionConcoursCore.Controllers
             }
 
             BaccalaureatModel bac = candidat_service.getBaccalaureat(cne);
-            ViewBag.BacPdf = bac.BacPdf;
+          
 
             return View(bac);
         }
@@ -203,26 +203,7 @@ namespace GestionConcoursCore.Controllers
         }
 
 
-        [HttpPost]
-        public JsonResult BacPdf(IFormFile file)
-        {
-            string response = " ";
-            string cne = HttpContext.Session.GetString("cne");
-
-            if (file != null && file.Length > 0)
-            {
-                response = candidat_service.uploadBacPdf(file, cne);
-                HttpContext.Session.SetString("BacPdf", response);
-            }
-            else
-            {
-                response = "aucunPDFBac.jpg";
-            }
-
-
-
-            return Json(response);
-        }
+      
 
         //##############################################  FILIERE  ##################################################
 
@@ -282,7 +263,7 @@ namespace GestionConcoursCore.Controllers
             ViewBag.niveau = HttpContext.Session.GetInt32("niveau");
             Debug.WriteLine("============================ " + HttpContext.Session.GetInt32("niveau"));
             DiplomeModel diplome = candidat_service.getDiplome(cne);
-            ViewBag.DiplomePdf = diplome.DiplomePdf;
+            
 
             return View(diplome);
         }
@@ -300,26 +281,7 @@ namespace GestionConcoursCore.Controllers
         }
 
 
-        [HttpPost]
-        public JsonResult DiplomePdf(IFormFile file)
-        {
-            string response = " ";
-            string cne = HttpContext.Session.GetString("cne");
-
-            if (file != null && file.Length > 0)
-            {
-                response = candidat_service.uploadDiplomePdf(file,cne);
-                HttpContext.Session.SetString("DiplemePdf", response);
-            }
-            else
-            {
-                response = "aucunPDFDiplome.jpg";
-            }
-
-
-
-            return Json(response);
-        }
+        
 
 
         public IActionResult FichierScanne()

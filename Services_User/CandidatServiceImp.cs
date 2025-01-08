@@ -42,7 +42,7 @@ namespace GestionConcoursCore.Services_User
                            MentionBac = b.MentionBac,
                            NoteBac = b.NoteBac,
                            TypeBac = b.TypeBac,
-                           BacPdf=b.BacPdf
+                         
                        }).SingleOrDefault();
 
             return bac;
@@ -54,82 +54,18 @@ namespace GestionConcoursCore.Services_User
             bac.DateObtentionBac = bac_saisi.DateObtentionBac;
             bac.MentionBac = bac_saisi.MentionBac;
             bac.NoteBac = bac_saisi.NoteBac;
-            bac.BacPdf = bac_saisi.BacPdf;
+           
             bac.TypeBac = bac_saisi.TypeBac;
-            bac.BacPdf=bac_saisi.BacPdf;
+           
 
             db.Update(bac);
             db.SaveChanges();
         }
-        public string uploadBacPdf(IFormFile file, string Bac)
-        {
-            string response = "";
-            string uniqueFileName;
-            try
-            {
-                String extension = Path.GetExtension(file.FileName);
-                //se positionner dans le dossier
-                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "BacPdf");
-                //make a unique filename
-                Random r = new Random();
-                int rInt = r.Next(0, 10000);
-                uniqueFileName = rInt.ToString() + extension.ToLower();
-                //définir le chemin complet
-                string filePath = Path.Combine(uploadFolder, uniqueFileName);
-                //upload dans le fichier epreuve
-                FileStream stream = new FileStream(filePath, FileMode.Create);
-                file.CopyTo(stream);
-                stream.Close();
-                //Inserer le name dans la bd
-                var x = db.Baccalaureats.Where(c => c.BacPdf == Bac).SingleOrDefault();
-                x.BacPdf = uniqueFileName;
-                db.SaveChanges();
-                response = uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                response = "aucunPDFBac.jpg";
-            }
-            return response;
-        }
+     
 
 
 
-
-
-        public string uploadDiplomePdf(IFormFile file, string Diplome)
-        {
-            string response = "";
-            string uniqueFileName;
-            try
-            {
-                String extension = Path.GetExtension(file.FileName);
-                //se positionner dans le dossier
-                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "DiplomePdf");
-                //make a unique filename
-                Random r = new Random();
-                int rInt = r.Next(0, 10000);
-                uniqueFileName = rInt.ToString() + extension.ToLower();
-                //définir le chemin complet
-                string filePath = Path.Combine(uploadFolder, uniqueFileName);
-                //upload dans le fichier epreuve
-                FileStream stream = new FileStream(filePath, FileMode.Create);
-                file.CopyTo(stream);
-                stream.Close();
-                //Inserer le name dans la bd
-                var x = db.Diplomes.Where(c => c.DiplomePdf == Diplome).SingleOrDefault();
-                x.DiplomePdf = uniqueFileName;
-                db.SaveChanges();
-                response = uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                response = "aucunPDFDiplome.jpg";
-            }
-            return response;
-        }
-
-
+      
 
         //############################################ Informations Personnelles  #########################################
 

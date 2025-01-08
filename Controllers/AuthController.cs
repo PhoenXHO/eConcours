@@ -100,12 +100,14 @@ namespace GestionConcoursCore.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Récupérer le CNE depuis la session
                 string cne = HttpContext.Session.GetString("cne");
                 if (string.IsNullOrEmpty(cne))
                 {
                     return RedirectToAction("Login", "Auth");
                 }
 
+                // Récupérer l'entrée existante du baccalauréat dans la base de données
                 var existingBac = _db.Baccalaureats.Find(cne);
                 if (existingBac == null)
                 {
@@ -113,50 +115,27 @@ namespace GestionConcoursCore.Controllers
                     return View(bac);
                 }
 
-                if (BacPdf != null && BacPdf.Length > 0)
-                {
-                    string webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-                    string pdfUploadFolderbac = Path.Combine(webRootPath, "BacFolder");
+                // Vérification et traitement du fichier BacPdf
+             
 
-                    Console.WriteLine($"Chemin du dossier BacFolder : {pdfUploadFolderbac}");
-
-                    string pdfUniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(BacPdf.FileName)}";
-                    string pdfFilePath = Path.Combine(pdfUploadFolderbac, pdfUniqueFileName);
-
-                    try
-                    {
-                        if (!Directory.Exists(pdfUploadFolderbac))
-                        {
-                            Directory.CreateDirectory(pdfUploadFolderbac);
-                        }
-
-                        using (var stream = new FileStream(pdfFilePath, FileMode.Create))
-                        {
-                            BacPdf.CopyTo(stream);
-                        }
-
-                        existingBac.BacPdf = pdfUniqueFileName;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Erreur lors de la création du dossier ou de l'enregistrement du fichier : {ex.Message}");
-                        ModelState.AddModelError("", "Erreur lors de l'enregistrement du fichier PDF.");
-                        return View(bac);
-                    }
-                }
-
+                // Mise à jour des autres propriétés
                 existingBac.TypeBac = bac.TypeBac;
                 existingBac.DateObtentionBac = bac.DateObtentionBac;
                 existingBac.NoteBac = bac.NoteBac;
                 existingBac.MentionBac = bac.MentionBac;
 
+                // Sauvegarder les modifications dans la base de données
                 _db.SaveChanges();
+
+                // Mettre à jour la session et rediriger vers l'étape suivante
                 HttpContext.Session.SetInt32("steps", 3);
                 return RedirectToAction("Step3");
             }
 
+            // Si le modèle n'est pas valide, retourner la vue avec les données actuelles
             return View(bac);
         }
+
 
         public ActionResult Step3()
         {
@@ -211,7 +190,7 @@ namespace GestionConcoursCore.Controllers
 
         [HttpPost]
         [HttpPost]
-        public ActionResult Step3(DiplomeNote diplome, IFormFile diplomePdf)
+        public ActionResult Step3(DiplomeNote diplome)
         {
             string cne = HttpContext.Session.GetString("cne");
             if (ModelState.IsValid)
@@ -228,30 +207,9 @@ namespace GestionConcoursCore.Controllers
                 x.VilleObtention = diplome.VilleObtention;
                 x.NoteDiplome = diplome.NoteDiplome;
                 x.Specialite = diplome.Specialite;
-                
-
-                if (diplomePdf != null && diplomePdf.Length > 0)
-                {
-                    string pdfUploadFolder = Path.Combine("wwwroot", "DiplomePdf");
-                    if (!Directory.Exists(pdfUploadFolder))
-                    {
-                        Directory.CreateDirectory(pdfUploadFolder);
-                    }
-
-                    string pdfUniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(diplomePdf.FileName)}";
-                    string pdfFilePath = Path.Combine(pdfUploadFolder, pdfUniqueFileName);
-
-                    using (var stream = new FileStream(pdfFilePath, FileMode.Create))
-                    {
-                        diplomePdf.CopyTo(stream);
-                    }
-
-                    x.DiplomePdf = pdfUniqueFileName;
-                    _db.SaveChanges();
-                }
-                
 
                
+                _db.SaveChanges();
 
                 // Mettez à jour les autres informations
                 var y = _db.AnneeUniversitaires.Where(a => a.Cne == cne).SingleOrDefault();

@@ -219,60 +219,11 @@
 
 
 
-                                @if (!string.IsNullOrEmpty(@ViewBag.DiplomePdf))
 
 
+                               
 
-
-
-
-
-                                {
-                                    <div style="text-align: center;">
-                                        <a id="pdfLink" href="@Url.Content("../DiplomeFolder/" + @ViewBag.DiplomePdf)" target="_blank">Ouvrir le fichier Diplome PDF</a>
-                                    </div>
-                                }
-
-
-
-
-
-
-
-                                else
-
-
-
-
-
-
-
-                                {
-                                    <div style="text-align: center;">
-                                        <span id="noPdfMessage">Aucun fichier Diplome PDF disponible.</span>
-                                    </div>
-                                }
-                                <br />
-
-
-                                <div class="offset-2">
-                                    <div class="row">
-                                        <div class="col-md-8 mb-3 showcase_content_area">
-                                            <div class="custom-file">
-                                                <input type="file" class="form-control custom-file-input" id="pdfInput" name="DiplomePdfUpload" accept=".pdf">
-                                                <label class="custom-file-label" for="customFile">Choisir un fichier PDF </label>
-                                            </div>
-                                            <br />
-                                        </div>
-                                        <br />
-
-                                        <div class="col-xl-2 col-lg-3">
-                                            <button class="btn btn-success px-4  btn-rounded" id="uploadPdfButton">Upload </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <br />
+                                
 
 
 
@@ -339,40 +290,3 @@
 </script>
 
 
-<script>
-    $(document).ready(function () {
-        $('#pdfInput').on('change', function () {
-            //get the file name
-            var fileName = $(this).val().split("\\").pop();
-            //replace the "Choose a file" label
-            $(this).next('.custom-file-label').html(fileName);
-        })
-        $("#uploadPdfButton").click(function () {
-            var file = $("#pdfInput").get(0).files[0];
-            var formData = new FormData();
-            formData.set("file", file, file.name);
-
-            $.ajax({
-                url: "/Home/DiplomePdf",
-                method: "post",
-                data: formData,
-                cache: false,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    console.log(response);
-                    if (response != "icon.png") {
-                        $("#pdfLink").attr("href", "../../DiplomeFolder/" + response);
-
-                    }
-                    else {
-                        alert("error");
-                    }
-                }
-            })
-                .then(function (result) {
-
-                });
-        });
-    })
-</script>

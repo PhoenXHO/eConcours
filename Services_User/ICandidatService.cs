@@ -32,8 +32,7 @@ namespace GestionConcoursCore.Services_User
 
         string checkDiplome(string cne);
         public string uploadCinPdf(IFormFile file, string cne);
-        public string uploadBacPdf(IFormFile file, string cne);
-        public string uploadDiplomePdf(IFormFile file, string Diplome);
+      
 
 
     }
