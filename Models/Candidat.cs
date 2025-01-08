@@ -1,4 +1,5 @@
 ﻿using System;
+
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,6 +32,7 @@ namespace GestionConcoursCore.Models
         public DateTime DateInscription { get; set; }
         public DateTime DateNaissance { get; set; }
         public string Photo { get; set; }
+        public string CinPdf { get; set; }
         public double NotePreselec { get; set; }
         public Boolean Convoque { get; set; }
         public Boolean Admis { get; set; }

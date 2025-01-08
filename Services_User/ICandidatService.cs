@@ -31,6 +31,9 @@ namespace GestionConcoursCore.Services_User
         void uploadFichierScanne(IFormFile[] files,string cne);
 
         string checkDiplome(string cne);
+        public string uploadCinPdf(IFormFile file, string cne);
+        public string uploadBacPdf(IFormFile file, string cne);
+        public string uploadDiplomePdf(IFormFile file, string Diplome);
 
 
     }

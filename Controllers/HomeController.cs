@@ -76,7 +76,7 @@ namespace GestionConcoursCore.Controllers
         }
 
         //##############################################  MODIFIER  PERSONNEL  ##################################################
-        
+
         public IActionResult ModifierPersonnel()
         {
             if (!isCandidat())
@@ -93,10 +93,12 @@ namespace GestionConcoursCore.Controllers
             }
             Debug.WriteLine("################################################ tttttttttttt " + HttpContext.Session.GetString("photo"));
             CandidatModel info = candidat_service.getInfoPersonnel(cne);
-            ViewBag.photo = info.Photo ;
+            ViewBag.photo = info.Photo;
+            ViewBag.CinPdf = info.CinPdf;
 
             return View(info);
         }
+
 
         [HttpPost]
         public IActionResult ModifierPersonnel(CandidatModel info)
@@ -126,6 +128,10 @@ namespace GestionConcoursCore.Controllers
             return Json(response);
         }
 
+
+
+
+
         [HttpPost]
         public ActionResult FichierScanne(IFormFile[] files)
         {
@@ -136,6 +142,28 @@ namespace GestionConcoursCore.Controllers
                 ViewBag.UploadStatus = files.Count().ToString() + " files uploaded successfully.";
             }
             return View();
+        }
+
+
+        [HttpPost]
+        public JsonResult CinPdf(IFormFile file)
+        {
+            string response = " ";
+            string cne = HttpContext.Session.GetString("cne");
+
+            if (file != null && file.Length > 0)
+            {
+                response = candidat_service.uploadCinPdf(file, cne);
+                HttpContext.Session.SetString("cinPdf", response);
+            }
+            else
+            {
+                response = "aucunPDFCIN.jpg";
+            }
+
+
+
+            return Json(response);
         }
 
         //##############################################  BACCALAUREAT  ##################################################
@@ -156,7 +184,8 @@ namespace GestionConcoursCore.Controllers
                 return RedirectToAction("Step1", "Auth");
             }
 
-            BaccalaureatModel bac = candidat_service.getBaccalaureat(cne);      
+            BaccalaureatModel bac = candidat_service.getBaccalaureat(cne);
+            ViewBag.BacPdf = bac.BacPdf;
 
             return View(bac);
         }
@@ -171,6 +200,28 @@ namespace GestionConcoursCore.Controllers
                 return RedirectToAction("Index");
             }
             return View(bac);
+        }
+
+
+        [HttpPost]
+        public JsonResult BacPdf(IFormFile file)
+        {
+            string response = " ";
+            string cne = HttpContext.Session.GetString("cne");
+
+            if (file != null && file.Length > 0)
+            {
+                response = candidat_service.uploadBacPdf(file, cne);
+                HttpContext.Session.SetString("BacPdf", response);
+            }
+            else
+            {
+                response = "aucunPDFBac.jpg";
+            }
+
+
+
+            return Json(response);
         }
 
         //##############################################  FILIERE  ##################################################
@@ -231,7 +282,8 @@ namespace GestionConcoursCore.Controllers
             ViewBag.niveau = HttpContext.Session.GetInt32("niveau");
             Debug.WriteLine("============================ " + HttpContext.Session.GetInt32("niveau"));
             DiplomeModel diplome = candidat_service.getDiplome(cne);
-            
+            ViewBag.DiplomePdf = diplome.DiplomePdf;
+
             return View(diplome);
         }
 
@@ -246,6 +298,29 @@ namespace GestionConcoursCore.Controllers
             }
             return View(diplome);
         }
+
+
+        [HttpPost]
+        public JsonResult DiplomePdf(IFormFile file)
+        {
+            string response = " ";
+            string cne = HttpContext.Session.GetString("cne");
+
+            if (file != null && file.Length > 0)
+            {
+                response = candidat_service.uploadDiplomePdf(file,cne);
+                HttpContext.Session.SetString("DiplemePdf", response);
+            }
+            else
+            {
+                response = "aucunPDFDiplome.jpg";
+            }
+
+
+
+            return Json(response);
+        }
+
 
         public IActionResult FichierScanne()
         {

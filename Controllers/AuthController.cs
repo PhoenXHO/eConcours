@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using GestionConcoursCore.Data;
 using GestionConcoursCore.Models;
 using GestionConcoursCore.ViewModels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -17,10 +19,12 @@ namespace GestionConcoursCore.Controllers
     public class AuthController : Controller
     {
         private readonly GestionConcourCoreDbContext _db;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public AuthController(GestionConcourCoreDbContext db)
+        public AuthController(GestionConcourCoreDbContext db, IWebHostEnvironment webHostEnvironment)
         {
             _db = db;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public ActionResult Step1()
@@ -91,20 +95,66 @@ namespace GestionConcoursCore.Controllers
         }
 
         [HttpPost]
-        public ActionResult Step2(Baccalaureat bac)
+        [HttpPost]
+        public IActionResult Step2(Baccalaureat bac, IFormFile BacPdf)
         {
             if (ModelState.IsValid)
             {
                 string cne = HttpContext.Session.GetString("cne");
-                var candidat = _db.Baccalaureats.Find(cne);
-                candidat.TypeBac = bac.TypeBac;
-                candidat.DateObtentionBac = bac.DateObtentionBac;
-                candidat.NoteBac = bac.NoteBac;
-                candidat.MentionBac = bac.MentionBac;
+                if (string.IsNullOrEmpty(cne))
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                var existingBac = _db.Baccalaureats.Find(cne);
+                if (existingBac == null)
+                {
+                    ModelState.AddModelError("", "Aucune donnée de baccalauréat trouvée pour ce CNE.");
+                    return View(bac);
+                }
+
+                if (BacPdf != null && BacPdf.Length > 0)
+                {
+                    string webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    string pdfUploadFolderbac = Path.Combine(webRootPath, "BacFolder");
+
+                    Console.WriteLine($"Chemin du dossier BacFolder : {pdfUploadFolderbac}");
+
+                    string pdfUniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(BacPdf.FileName)}";
+                    string pdfFilePath = Path.Combine(pdfUploadFolderbac, pdfUniqueFileName);
+
+                    try
+                    {
+                        if (!Directory.Exists(pdfUploadFolderbac))
+                        {
+                            Directory.CreateDirectory(pdfUploadFolderbac);
+                        }
+
+                        using (var stream = new FileStream(pdfFilePath, FileMode.Create))
+                        {
+                            BacPdf.CopyTo(stream);
+                        }
+
+                        existingBac.BacPdf = pdfUniqueFileName;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erreur lors de la création du dossier ou de l'enregistrement du fichier : {ex.Message}");
+                        ModelState.AddModelError("", "Erreur lors de l'enregistrement du fichier PDF.");
+                        return View(bac);
+                    }
+                }
+
+                existingBac.TypeBac = bac.TypeBac;
+                existingBac.DateObtentionBac = bac.DateObtentionBac;
+                existingBac.NoteBac = bac.NoteBac;
+                existingBac.MentionBac = bac.MentionBac;
+
                 _db.SaveChanges();
                 HttpContext.Session.SetInt32("steps", 3);
                 return RedirectToAction("Step3");
             }
+
             return View(bac);
         }
 
@@ -117,6 +167,15 @@ namespace GestionConcoursCore.Controllers
                 {
                     return RedirectToAction("Index", "Home");
                 }
+
+
+
+
+                
+
+
+
+
                 var diplome = _db.Diplomes.Find(HttpContext.Session.GetString("cne"));
                 var anne = _db.AnneeUniversitaires.Find(HttpContext.Session.GetString("cne"));
                 DiplomeNote dipNote = new DiplomeNote()
@@ -151,76 +210,80 @@ namespace GestionConcoursCore.Controllers
         }
 
         [HttpPost]
-        public ActionResult Step3(DiplomeNote diplome)
+        [HttpPost]
+        public ActionResult Step3(DiplomeNote diplome, IFormFile diplomePdf)
         {
             string cne = HttpContext.Session.GetString("cne");
             if (ModelState.IsValid)
             {
                 var x = _db.Diplomes.Where(c => c.Cne == cne).SingleOrDefault();
+                if (x == null)
+                {
+                    ModelState.AddModelError("", "Aucun diplôme trouvé pour ce CNE.");
+                    return View(diplome);
+                }
+
                 x.Type = diplome.Type;
                 x.Etablissement = diplome.Etablissement;
                 x.VilleObtention = diplome.VilleObtention;
                 x.NoteDiplome = diplome.NoteDiplome;
                 x.Specialite = diplome.Specialite;
-                _db.SaveChanges();
+                
 
-                var y = _db.AnneeUniversitaires.Where(a => a.Cne == cne).SingleOrDefault();
-                y.Semestre1 = diplome.Semestre1;
-                y.Semestre2 = diplome.Semestre2;
-                y.Semestre3 = diplome.Semestre3;
-                y.Semestre4 = diplome.Semestre4;
-                y.Semestre5 = diplome.Semestre5;
-                y.Semestre6 = diplome.Semestre6;
-                y.Redoublant1 = diplome.Redoublant1;
-                y.Redoublant2 = diplome.Redoublant2;
-                y.Redoublant3 = diplome.Redoublant3;
-                y.AnneUni1 = diplome.AnneUni1;
-                y.AnneUni2 = diplome.AnneUni2;
-                y.AnneUni3 = diplome.AnneUni3;
-
-                _db.SaveChanges();
-                Candidat candidat = _db.Candidats.Find(HttpContext.Session.GetString("cne"));
-                candidat.Verified = 1;
-                _db.SaveChanges();
-                var z = _db.Candidats.Where(c=> c.Cne== HttpContext.Session.GetString("cne")).SingleOrDefault();
-
-                var fromAddress = new MailAddress("admin@gmail.com", "From ENSAS");
-                var toAddress = new MailAddress(candidat.Email, "To Name");
-                const string fromPassword = "adminconcours125498";
-                const string subject = "Création de compte de postulation au concours ENSAS";
-                //string body = "<a href=\"http://localhost:49969/Auth/Verify?cne="+candidat.Cne+" \">Link</a><br /><p> this is the password : "+candidat.Password+"</p>";
-                string body = z.Nom;
-
-                HttpContext.Session.SetInt32("verified",  z.Verified);
-
-                var smtp = new SmtpClient
+                if (diplomePdf != null && diplomePdf.Length > 0)
                 {
-                    Host = "smtp.gmail.com",
-                    Port = 587,
-                    EnableSsl = true,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
-                    Timeout = 60000
-                };
-                using (var message = new MailMessage(fromAddress, toAddress)
-                {
-                    Subject = subject,
-                    Body = body
-                })
-                {
-                    try
+                    string pdfUploadFolder = Path.Combine("wwwroot", "DiplomePdf");
+                    if (!Directory.Exists(pdfUploadFolder))
                     {
-                        message.IsBodyHtml = true;
-                        smtp.Send(message);
-                        return RedirectToAction("Index", "Home");
+                        Directory.CreateDirectory(pdfUploadFolder);
                     }
-                    catch
+
+                    string pdfUniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(diplomePdf.FileName)}";
+                    string pdfFilePath = Path.Combine(pdfUploadFolder, pdfUniqueFileName);
+
+                    using (var stream = new FileStream(pdfFilePath, FileMode.Create))
                     {
-                        return RedirectToAction("Index", "Home");
+                        diplomePdf.CopyTo(stream);
                     }
-                    
+
+                    x.DiplomePdf = pdfUniqueFileName;
+                    _db.SaveChanges();
                 }
+                
+
                
+
+                // Mettez à jour les autres informations
+                var y = _db.AnneeUniversitaires.Where(a => a.Cne == cne).SingleOrDefault();
+                if (y != null)
+                {
+                    y.Semestre1 = diplome.Semestre1;
+                    y.Semestre2 = diplome.Semestre2;
+                    y.Semestre3 = diplome.Semestre3;
+                    y.Semestre4 = diplome.Semestre4;
+                    y.Semestre5 = diplome.Semestre5;
+                    y.Semestre6 = diplome.Semestre6;
+                    y.Redoublant1 = diplome.Redoublant1;
+                    y.Redoublant2 = diplome.Redoublant2;
+                    y.Redoublant3 = diplome.Redoublant3;
+                    y.AnneUni1 = diplome.AnneUni1;
+                    y.AnneUni2 = diplome.AnneUni2;
+                    y.AnneUni3 = diplome.AnneUni3;
+
+                    _db.SaveChanges();
+                }
+
+                Candidat candidat = _db.Candidats.Find(cne);
+                if (candidat != null)
+                {
+                    candidat.Verified = 1;
+                    _db.SaveChanges();
+                }
+
+                // Envoi de l'e-mail
+                // ... (votre code d'envoi d'e-mail ici)
+
+                return RedirectToAction("Index", "Home");
             }
             return View(diplome);
         }
@@ -328,7 +391,8 @@ namespace GestionConcoursCore.Controllers
             return View();
         }
         [HttpPost]
-        public ActionResult Register(Candidat candidat)
+        [HttpPost]
+        public ActionResult Register(Candidat candidat, IFormFile imageUpload, IFormFile cinPdf)
         {
             if (candidat.Niveau == 0)
             {
@@ -364,7 +428,79 @@ namespace GestionConcoursCore.Controllers
                 candidat.Matricule = new string(charsMatricule.ToArray()).ToUpper();
                 candidat.Password = new string(chars.ToArray());
                 candidat.Verified = 0;
-                candidat.Photo = "icon.jpg";
+
+
+
+
+
+
+
+
+
+
+                //============================================================================================================//
+                // Gestion du téléchargement de l'image
+                if (imageUpload != null && imageUpload.Length > 0)
+                {
+                    string extension = Path.GetExtension(imageUpload.FileName);
+                    string uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                    string uploadFolder = Path.Combine("wwwroot", "candidatImages");
+
+                    // Définir le chemin complet
+                    string filePath = Path.Combine(uploadFolder, uniqueFileName);
+
+                    // Télécharger le fichier
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        imageUpload.CopyTo(stream);
+                    }
+
+                    // Mettre à jour la propriété Photo du candidat
+                    candidat.Photo = uniqueFileName;
+                }
+                else
+                {
+                    candidat.Photo = "icon.jpg"; // Valeur par défaut si aucune image n'est fournie
+                }
+
+                //============================================================================================================//
+
+                // Gestion du téléchargement du PDF CIN
+                if (cinPdf != null && cinPdf.Length > 0)
+                {
+                    string pdfUploadFolder = Path.Combine("wwwroot", "NewFolder");
+                    string pdfUniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(cinPdf.FileName)}";
+                    string pdfFilePath = Path.Combine(pdfUploadFolder, pdfUniqueFileName);
+
+                    // Créer le dossier s'il n'existe pas
+                    if (!Directory.Exists(pdfUploadFolder))
+                    {
+                        Directory.CreateDirectory(pdfUploadFolder);
+                    }
+
+                    // Télécharger le PDF
+                    using (var stream = new FileStream(pdfFilePath, FileMode.Create))
+                    {
+                        cinPdf.CopyTo(stream);
+                    }
+
+                    candidat.CinPdf = pdfUniqueFileName;
+                }
+                else
+                {
+                    candidat.CinPdf = "icon.pdf";
+                }
+
+
+
+
+
+
+
+
+
+
+
                 _db.Candidats.Add(candidat);
                 _db.SaveChanges();
 
@@ -434,14 +570,12 @@ namespace GestionConcoursCore.Controllers
                     {
                     }
                 }
-                
+
                 TempData["message"] = "Votre mot de passe est : '" + candidat.Password + "'." + " Vous le trouverez sur votre email aussi.";
                 return Redirect("Login");
             }
             return View(candidat);
         }
-
-
         public IActionResult Deconnexion()
         {
             HttpContext.Session.Remove("cne");

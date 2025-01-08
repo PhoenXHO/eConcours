@@ -1,7 +1,10 @@
 ﻿@model GestionConcoursCore.ViewModels.CandidatModel
 @{
     ViewData["Title"] = "Home Page";
+
     Layout = "~/Views/Shared/_UserLayout.cshtml";
+
+  
 }
 
 <div class="page-content-wrapper-inner" style="font-family:'Arial Rounded MT';">
@@ -21,10 +24,10 @@
                 <div class="offset-2">
                     <div class="row">
                         <div class="col-md-8 mb-3 showcase_content_area">
-                                <div class="custom-file">
-                                    <input type="file" class="form-control custom-file-input" id="input" name="imageUpload">
-                                    <label class="custom-file-label" for="customFile">Choisir une photo</label>
-                                </div>
+                            <div class="custom-file">
+                                <input type="file" class="form-control custom-file-input" id="input" name="imageUpload">
+                                <label class="custom-file-label" for="customFile">Choisir une photo</label>
+                            </div>
                             <br />
                         </div>
                         <br />
@@ -37,9 +40,56 @@
 
                 <hr class="col-md-8 offset-md-2 mb-5" />
 
+
+
+
+
+
+
+                @if (!string.IsNullOrEmpty(@ViewBag.CinPdf))
+
+                {
+                    <div style="text-align: center;">
+                        <a id="pdfLink" href="@Url.Content("../NewFolder/" + @ViewBag.CinPdf)" target="_blank">Ouvrir le fichier CIN PDF</a>
+                    </div>
+                }
+
+                else
+
+                {
+                    <div style="text-align: center;">
+                        <span id="noPdfMessage">Aucun fichier CIN PDF disponible.</span>
+                    </div>
+                }
+                <br />
+
+
+                <div class="offset-2">
+                    <div class="row">
+                        <div class="col-md-8 mb-3 showcase_content_area">
+                            <div class="custom-file">
+                                <input type="file" class="form-control custom-file-input" id="pdfInput" name="cinPdfUpload" accept=".pdf">
+                                <label class="custom-file-label" for="customFile">Choisir un fichier PDF pour cin recto verso</label>
+                            </div>
+                            <br />
+                        </div>
+                        <br />
+
+                        <div class="col-xl-2 col-lg-3">
+                            <button class="btn btn-success px-4  btn-rounded" id="uploadPdfButton">Upload Image</button>
+                        </div>
+                    </div>
+                </div><br />
+
+
+
+
+
+
+
                 <div class="row d-flex justify-content-center m-b-30">
                     <div class="col-md-10">
-                        <form asp-action="ModifierPersonnel">
+                        <form asp-action="ModifierPersonnel" enctype="multipart/form-data">
 
                             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
                             @Html.HiddenFor(model => model.Cne)
@@ -191,13 +241,11 @@
                                             @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
                                         </div>
                                     </div>
+                                </div>
 
-                                </div>
-                                <div class="form-group">
-                                    <div class="p-0 my-4 col-md-offset-2 col-md-12 d-flex justify-content-end">
-                                        <input type="submit" value=" Enregistrer " class="btn btn-primary px-4 mt-2 btn-rounded" />
-                                    </div>
-                                </div>
+                                
+
+
                             </div>
 
 
@@ -205,7 +253,7 @@
                     </div>
 
                 </div>
-                
+
 
             </div>
         </div>
@@ -244,9 +292,48 @@
                     }
                 }
             })
-            .then(function(result) {
+                .then(function (result) {
 
-            });
                 });
+        });
+    })
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $('#pdfInput').on('change', function () {
+            //get the file name
+            var fileName = $(this).val().split("\\").pop();
+            //replace the "Choose a file" label
+            $(this).next('.custom-file-label').html(fileName);
+        })
+        $("#uploadPdfButton").click(function () {
+            var file = $("#pdfInput").get(0).files[0];
+            var formData = new FormData();
+            formData.set("file", file, file.name);
+
+            $.ajax({
+                url: "/Home/CinPdf",
+                method: "post",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    console.log(response);
+                    if (response != "icon.png") {
+                        $("#pdfLink").attr("href", "../../NewFolder/" + response);
+
+                    }
+                    else {
+                        alert("error");
+                    }
+                }
+            })
+                .then(function (result) {
+
+                });
+        });
     })
 </script>

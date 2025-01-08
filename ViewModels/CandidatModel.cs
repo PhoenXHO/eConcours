@@ -38,6 +38,7 @@ namespace GestionConcoursCore.ViewModels
             [Required]
             public DateTime DateNaissance { get; set; }
             public string Photo { get; set; }
-        
+            public string CinPdf { get; set; }
+
     }
 }

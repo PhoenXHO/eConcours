@@ -41,7 +41,8 @@ namespace GestionConcoursCore.Services_User
                            DateObtentionBac = b.DateObtentionBac,
                            MentionBac = b.MentionBac,
                            NoteBac = b.NoteBac,
-                           TypeBac = b.TypeBac
+                           TypeBac = b.TypeBac,
+                           BacPdf=b.BacPdf
                        }).SingleOrDefault();
 
             return bac;
@@ -53,40 +54,147 @@ namespace GestionConcoursCore.Services_User
             bac.DateObtentionBac = bac_saisi.DateObtentionBac;
             bac.MentionBac = bac_saisi.MentionBac;
             bac.NoteBac = bac_saisi.NoteBac;
+            bac.BacPdf = bac_saisi.BacPdf;
             bac.TypeBac = bac_saisi.TypeBac;
+            bac.BacPdf=bac_saisi.BacPdf;
 
             db.Update(bac);
             db.SaveChanges();
         }
+        public string uploadBacPdf(IFormFile file, string Bac)
+        {
+            string response = "";
+            string uniqueFileName;
+            try
+            {
+                String extension = Path.GetExtension(file.FileName);
+                //se positionner dans le dossier
+                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "BacPdf");
+                //make a unique filename
+                Random r = new Random();
+                int rInt = r.Next(0, 10000);
+                uniqueFileName = rInt.ToString() + extension.ToLower();
+                //définir le chemin complet
+                string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                //upload dans le fichier epreuve
+                FileStream stream = new FileStream(filePath, FileMode.Create);
+                file.CopyTo(stream);
+                stream.Close();
+                //Inserer le name dans la bd
+                var x = db.Baccalaureats.Where(c => c.BacPdf == Bac).SingleOrDefault();
+                x.BacPdf = uniqueFileName;
+                db.SaveChanges();
+                response = uniqueFileName;
+            }
+            catch (Exception ex)
+            {
+                response = "aucunPDFBac.jpg";
+            }
+            return response;
+        }
+
+
+
+
+
+        public string uploadDiplomePdf(IFormFile file, string Diplome)
+        {
+            string response = "";
+            string uniqueFileName;
+            try
+            {
+                String extension = Path.GetExtension(file.FileName);
+                //se positionner dans le dossier
+                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "DiplomePdf");
+                //make a unique filename
+                Random r = new Random();
+                int rInt = r.Next(0, 10000);
+                uniqueFileName = rInt.ToString() + extension.ToLower();
+                //définir le chemin complet
+                string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                //upload dans le fichier epreuve
+                FileStream stream = new FileStream(filePath, FileMode.Create);
+                file.CopyTo(stream);
+                stream.Close();
+                //Inserer le name dans la bd
+                var x = db.Diplomes.Where(c => c.DiplomePdf == Diplome).SingleOrDefault();
+                x.DiplomePdf = uniqueFileName;
+                db.SaveChanges();
+                response = uniqueFileName;
+            }
+            catch (Exception ex)
+            {
+                response = "aucunPDFDiplome.jpg";
+            }
+            return response;
+        }
+
+
 
         //############################################ Informations Personnelles  #########################################
 
         public CandidatModel getInfoPersonnel(string cne)
         {
             var info = (from c in db.Candidats
-                       where c.Cne.Equals(cne)
-                       select new CandidatModel
-                       {
-                           Cne = c.Cne,
-                           Cin = c.Cin,
-                           Nom = c.Nom,
-                           Prenom = c.Prenom,
-                           Email = c.Email,
-                           Password = c.Password,
-                           Sexe = c.Sexe,
-                           Ville=c.Ville,
-                           Adresse = c.Adresse,
-                           LieuNaissance = c.LieuNaissance,
-                           Gsm = c.Gsm,
-                           Telephone = c.Telephone,
-                           DateNaissance = c.DateNaissance,
-                           Nationalite = c.Nationalite,
-                           Photo = c.Photo
-                           
-                       }).SingleOrDefault();
+                        where c.Cne.Equals(cne)
+                        select new CandidatModel
+                        {
+                            Cne = c.Cne,
+                            Cin = c.Cin,
+                            Nom = c.Nom,
+                            Prenom = c.Prenom,
+                            Email = c.Email,
+                            Password = c.Password,
+                            Sexe = c.Sexe,
+                            Ville = c.Ville,
+                            Adresse = c.Adresse,
+                            LieuNaissance = c.LieuNaissance,
+                            Gsm = c.Gsm,
+                            Telephone = c.Telephone,
+                            DateNaissance = c.DateNaissance,
+                            Nationalite = c.Nationalite,
+                            Photo = c.Photo,
+                            CinPdf = c.CinPdf
+
+                        }).SingleOrDefault();
 
             return info;
         }
+
+
+        public string uploadCinPdf(IFormFile file, string cne)
+        {
+            string response = "";
+            string uniqueFileName;
+            try
+            {
+                String extension = Path.GetExtension(file.FileName);
+                //se positionner dans le dossier
+                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "NewFolder");
+                //make a unique filename
+                Random r = new Random();
+                int rInt = r.Next(0, 10000);
+                uniqueFileName = rInt.ToString() + extension.ToLower();
+                //définir le chemin complet
+                string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                //upload dans le fichier epreuve
+                FileStream stream = new FileStream(filePath, FileMode.Create);
+                file.CopyTo(stream);
+                stream.Close();
+                //Inserer le name dans la bd
+                var x = db.Candidats.Where(c => c.Cne == cne).SingleOrDefault();
+                x.CinPdf = uniqueFileName;
+                db.SaveChanges();
+                response = uniqueFileName;
+            }
+            catch (Exception ex)
+            {
+                response = "aucunPDFcin.jpg";
+            }
+            return response;
+        }
+
+
 
         public void setInfoPersonnel(CandidatModel saisi)
         {

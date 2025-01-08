@@ -19,5 +19,6 @@ namespace GestionConcoursCore.ViewModels
         public double NoteBac { get; set; }
         [Required]
         public string MentionBac { get; set; }
+        public string BacPdf { get; set; }
     }
 }

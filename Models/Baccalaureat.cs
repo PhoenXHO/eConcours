@@ -15,6 +15,7 @@ namespace GestionConcoursCore.Models
         public string DateObtentionBac { get; set; }
         public double NoteBac { get; set; }
         public string MentionBac { get; set; }
+        public string BacPdf { get; set; }
 
 
         public virtual Candidat Candidat { get; set; }
