@@ -56,6 +56,25 @@ namespace GestionConcoursCore.Controllers
 
         }
 
+		[HttpPost]
+		public JsonResult ConvoquerCandidats([FromBody] List<string> selectedCnes)
+		{
+			if (!isAdmin())
+			{
+				return Json(new { success = false, message = "Vous n'êtes pas autorisé à effectuer cette action" });
+			}
+
+			try
+			{
+				preselec.convoquerCandidats(selectedCnes);
+				return Json(new { success = true });
+			}
+			catch (Exception e)
+			{
+				return Json(new { success = false, message = "Une erreur s'est produite lors de la convocation des candidats: " + e.Message });
+			}
+		}
+
         /*################################################  DEBUT  RECHERCHE  ################################################ */
 
         public IActionResult Recherche3()

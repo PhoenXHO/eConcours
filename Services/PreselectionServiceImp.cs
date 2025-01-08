@@ -19,6 +19,22 @@ namespace GestionConcoursCore.Services
             //db.Configuration.ProxyCreationEnabled = false;
         }
 
+		public void convoquerCandidats(List<string> cneList)
+		{
+			int lastFileNumber = db.Candidats.Max(c => c.Num_dossier);
+
+			foreach (string cne in cneList)
+			{
+				var candidat = db.Candidats.Find(cne);
+				if (candidat != null)
+				{
+					candidat.Num_dossier = ++lastFileNumber;
+					candidat.Convoque = true;
+					db.SaveChanges();
+				}
+			}
+		}
+
         public IEnumerable<PreselectionModel> getAll(int niveau, string filiere, string diplome)
         {
             var res = (from c in db.Candidats

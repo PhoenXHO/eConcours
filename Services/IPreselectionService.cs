@@ -8,6 +8,8 @@ namespace GestionConcoursCore.Services
 {
     public interface IPreselectionService
     {
+        void convoquerCandidats(List<string> cneList);
+
         IEnumerable<PreselectionModel> getAll(int niveau, string filiere, string diplome);
 
         void setConfig(ConfigurationPreselection config, int niveau);
