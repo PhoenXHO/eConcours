@@ -1,81 +1,52 @@
-﻿
-
+﻿@using NonFactors.Mvc.Grid
 @model GestionConcoursCore.Models.UserViewModel
-
-
 @{
     ViewBag.Title = "Correction Indus 3A";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-
 }
 
+<div class="container-fluid">
+    <div class="align-content-center">
+        <h3 class="font-weight-bold text-center pt-3 pb-5">Listes des candidats présents au concours d'accès en 3 ème année</h3>
+    </div>
+    @using (Html.BeginForm("INDUS_Post", "Admin", FormMethod.Post))
+    {
+        <!-- Replace the existing table with MVC Grid -->
+        @Html.Grid(Model.Nom.Select((name, index) => new
+        {
+            N = index + 1,
+            Dossier = Model.Num_dossier[index],
+            Cne = Model.Cne[index],
+            Cin = Model.Cin[index],
+            Nom = Model.Nom[index],
+            Prenom = Model.Prenom[index],
+            Diplome = Model.Diplome[index],
+            Filiere = Model.Filiere[index],
+            NoteMath = Model.NoteMath[index],
+            NoteSpecialite = Model.NoteSpecialite[index],
+            Math = Model.NoteMath[index],
+            Specialite = Model.NoteSpecialite[index]
+        })).Build(columns =>
+        {
+            columns.Add(model => model.N).Titled("N").Css("text-center");
+            columns.Add(model => model.Dossier).Titled("Dossier").Css("text-center");
+            columns.Add(model => model.Cin).Titled("CIN").Css("text-center");
+            columns.Add(model => model.Nom).Titled("Nom").Css("text-center");
+            columns.Add(model => model.Prenom).Titled("Prénom").Css("text-center");
+            columns.Add(model => model.Diplome).Titled("Diplôme").Css("text-center");
+            columns.Add(model => model.Filiere).Titled("Filière").Css("text-center");
+            columns.Add(model => model.NoteMath).Titled("Math").Css("text-center")
+                .RenderedAs(model => Html.TextBoxFor(m => m.NoteMath, new { @class = "form-control" }));
+            columns.Add(model => model.NoteSpecialite).Titled("Spécialité").Css("text-center")
+                .RenderedAs(model => Html.TextBoxFor(m => m.NoteSpecialite, new { @class = "form-control" }));
+        }).Css("table table-bordered").Empty("Aucun enregistrement trouvé").Filterable().Sortable()
 
-		<div class="container-fluid">
-
-			<div class="align-content-center">
-				<h3 class="font-weight-bold text-center pt-3 pb-5">Listes des candidats présents au concours d'accès en 3 ème année</h3>
-
-			</div>
-			@using (Html.BeginForm("INDUS_Post", "Admin", FormMethod.Post))
-			{
-				<div>
-					<table class="table table-bordered  ">
-						<tr  class="table-success">
-							<th class="text-center">N</th>
-							<th class="text-center">Dossier</th>
-							<th class="text-center">Cin</th>
-							<th class="text-center">Nom</th>
-							<th class="text-center">Prenom</th>
-							<th class="text-center">Diplôme</th>
-							<th class="text-center">Filiere</th>
-							<th class="text-center">Math</th>
-							<th class="text-center">Spécialité</th>
-
-						</tr>
-						<tbody id="tbody">
-							@for (int i = 0; i < Model.Nom.Count; i++)
-							{
-
-
-
-
-								<tr>
-									<td class="text-center">@(i)</td>
-									<td class="text-center">@Html.DisplayFor(modelItem => Model.Num_dossier[i])</td>
-									<td class="text-center">@Html.DisplayFor(modelItem => Model.Cin[i])</td>
-									<td class="text-center">@Html.DisplayFor(modelItem => Model.Nom[i])</td>
-									<td class="text-center">@Html.DisplayFor(modelItem => Model.Prenom[i])</td>
-									<td class="text-center">@Html.DisplayFor(modelItem => Model.Diplome[i])</td>
-									<td class="text-center">@Html.DisplayFor(modelItem => Model.Filiere[i])</td>
-									<td class="text-center">
-										@Html.TextBoxFor(modelItem => Model.NoteMath[i], new { @class = "form-control" })
-										@Html.HiddenFor(modelItem => Model.Cne[i], new { @class = "form-control" })
-									</td>
-									<td class="text-center">@Html.TextBoxFor(modelItem => Model.NoteSpecialite[i], new { @class = "form-control" })</td>
-
-
-								</tr>
-
-							}
-						</tbody>
-
-					</table>
-					<div class="col-md-3 offset-4 mt-3">
-						<input type="submit" id="submit" value="Valider les notes" class="btn btn-primary btn-block" />
-
-					</div>
-
-				</div>
-			}
-			<h1 id="dd"></h1>
-
-		</div>
-		<!-- /.container-fluid -->
-
-	</div>
+        <div class="col-md-3 offset-4 mt-3">
+            <input type="submit" id="submit" value="Valider les notes" class="btn btn-primary btn-block" />
+        </div>
+    }
 </div>
-
-
+<!-- /.container-fluid -->
 
 @*
 

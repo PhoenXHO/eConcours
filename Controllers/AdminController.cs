@@ -41,8 +41,8 @@ namespace GestionConcoursCore.Controllers
 			this.corret = corret;
             this.statistique = statistique;
 			_context = context;
-            
-		}
+
+        }
 
         public IActionResult Index()
         {
@@ -502,28 +502,20 @@ namespace GestionConcoursCore.Controllers
 
 		public IActionResult INFO()
 		{
-			var model = new UserViewModel();
-			model.NoteSpecialite = new List<double>();
-			//model.Classement = new List<int>();
-			model.Cne = new List<string>();
-			model.NoteMath = new List<double>();
+            var model = new UserViewModel()
+            {
+				NoteSpecialite = new List<double>(),
+				Cne = new List<string>(),
+				NoteMath = new List<double>(),
+				Num_dossier = new List<int>(),
+				Cin = new List<string>(),
+				Prenom = new List<string>(),
+				Filiere = new List<string>(),
+				Diplome = new List<string>(),
+				Nom = new List<string>()
+			};
 
-			model.Num_dossier = new List<int>();
-			model.Cin = new List<string>();
-			model.Prenom = new List<string>();
-			model.Filiere = new List<string>();
-			model.Diplome = new List<string>();
-			model.Nom = new List<string>();
-
-
-
-
-
-
-
-
-
-		string type_fil = "informatique";
+		    string type_fil = "informatique";
 			if (!isAdmin())
 			{
 				return RedirectToAction("Login", "AdminAuth");
@@ -551,12 +543,8 @@ namespace GestionConcoursCore.Controllers
 	[HttpPost]
 		public ActionResult INFO_Post(UserViewModel etudiants)
 		{
-
-		
-
-				for (int i = 0; i < etudiants.Cne.Count; i++)
+			for (int i = 0; i < etudiants.Cne.Count; i++)
 			{
-			
 				ConcourEcrit con = _context.CouncourEcrits.Find(etudiants.Cne[i]);
 				con.NoteMath = etudiants.NoteMath[i];
 				con.NoteSpecialite = etudiants.NoteSpecialite[i];
@@ -564,7 +552,6 @@ namespace GestionConcoursCore.Controllers
 			}
 
 			return RedirectToAction("index");
-
 		}
 
 

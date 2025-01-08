@@ -15,6 +15,8 @@
     <!-- icon -->
     <link rel="shortcut icon" type="image/x-icon" href="~/images/ensa_logo.png" />
 
+    <link href="~/css/mvc-grid/mvc-grid.css" rel="stylesheet">
+
 </head>
 <body id="page-top">
     <!-- Page Wrapper -->
@@ -215,6 +217,12 @@
     <!-- Page level custom scripts -->
     <script src="~/content_admin/js/demo/chart-area-demo.js"></script>
     <script src="~/content_admin/js/demo/chart-pie-demo.js"></script>
+
+    <script src="~/js/mvc-grid/mvc-grid.js"></script>
+
+    <script>
+        document.querySelectorAll(".mvc-grid").forEach(element => new MvcGrid(element));
+    </script>
 
 </body>
 </html>

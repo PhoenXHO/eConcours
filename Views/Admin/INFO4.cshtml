@@ -1,81 +1,54 @@
-﻿
-
+﻿@using NonFactors.Mvc.Grid
 @model GestionConcoursCore.Models.UserViewModel
 
 @{
     ViewBag.Title = "Correction Informatique 4A";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-
 }
 
+<div class="container-fluid">
 
-		<div class="container-fluid">
+    <div class="align-content-center">
+        <h3 class="font-weight-bold text-center pt-3 pb-5">Listes des candidats présents au concours d'accès en 4 ème année</h3>
+    </div>
 
-			<div class="align-content-center">
-				<h3 class="font-weight-bold text-center pt-3 pb-5">Listes des candidats présents au concours d'accès en 4 ème année</h3>
+    <!-- Replace the existing form and table with MVC Grid -->
+    @Html.Grid(Model.Nom.Select((name, index) => new
+    {
+        N = index + 1,
+        Dossier = Model.Num_dossier[index],
+        Cne = Model.Cne[index],
+        Cin = Model.Cin[index],
+        Nom = Model.Nom[index],
+        Prenom = Model.Prenom[index],
+        Filiere = Model.Filiere[index],
+        Diplome = Model.Diplome[index],
+        Provenance = Model.Etablissement[index],
+        Specialite = Model.Specialite[index],
+        Classement = Model.Classement[index]
+    })).Build(columns =>
+    {
+        columns.Add(model => model.N).Titled("N").Css("text-center");
+        columns.Add(model => model.Dossier).Titled("Dossier").Css("text-center");
+        columns.Add(model => model.Cne).Titled("Cne").Css("text-center");
+        columns.Add(model => model.Cin).Titled("Cin").Css("text-center");
+        columns.Add(model => model.Nom).Titled("Nom").Css("text-center");
+        columns.Add(model => model.Prenom).Titled("Prenom").Css("text-center");
+        columns.Add(model => model.Filiere).Titled("Filiere").Css("text-center");
+        columns.Add(model => model.Diplome).Titled("Diplôme").Css("text-center");
+        columns.Add(model => model.Provenance).Titled("Provenance").Css("text-center");
+        columns.Add(model => model.Specialite).Titled("Spécialité").Css("text-center");
+        columns.Add(model => model.Classement).Titled("Classement").Css("text-center")
+            .RenderedAs(model => Html.TextBoxFor(m => model.Classement, new { @class = "form-control", @Value = model.Classement }))
+            .Filterable(false).Sortable(false);
+    }).Css("table table-bordered table-hover").Empty("Aucun enregistrement trouvé").Filterable().Sortable()
 
-			</div>
-			@using (Html.BeginForm("INFO_Post4", "Admin", FormMethod.Post))
-			{
-				<div>
-					<table class="table table-bordered ">
-						<tr class="table-danger">
-							<th class="text-center">N</th>
-							<th class="text-center">Dossier</th>
-							<th class="text-center">Cin</th>
-							<th class="text-center">Nom</th>
-							<th class="text-center">Prenom</th>
-							<th class="text-center">Filiere</th>
-							<th class="text-center">Diplôme</th>
-							<th class="text-center">Provenance</th>
-							<th class="text-center">Spécialité</th>
-							<th class="text-center">Classement</th>
+    <div class="col-md-3 offset-4 mt-3">
+        <input type="submit" id="submit" value="Valider le classement" class="btn btn-primary btn-block" />
+    </div>
 
-						</tr>
-						<tbody id="tbody">
-							@for (int i = 0; i < Model.Cne.Count; i++)
-							{
-
-
-							<tr>
-								<td class="text-center">@(i)</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Num_dossier[i])</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Cin[i])</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Nom[i])</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Prenom[i])</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Filiere[i])</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Diplome[i])</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Etablissement[i])</td>
-								<td class="text-center">@Html.DisplayFor(modelItem => Model.Specialite[i])</td>
-								<td class="text-center">
-									@Html.TextBoxFor(modelItem => Model.Classement[i], new { @class = "form-control" })
-									@Html.HiddenFor(modelItem => Model.Cne[i])
-								</td>
-
-
-
-							</tr>
-
-						}
-							</tbody>
-
-						</table>
-						<div class="col-md-3 offset-4 mt-3">
-							<input type="submit" id="submit" value="Valider le classement" class="btn btn-primary btn-block" />
-
-						</div>
-
-					</div>
-				}
-			<h1 id="dd"></h1>
-
-		</div>
-		<!-- /.container-fluid -->
-
-	</div>
 </div>
-
-
+<!-- /.container-fluid -->
 
 @*
 
