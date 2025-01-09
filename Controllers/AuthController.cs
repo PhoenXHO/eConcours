@@ -74,6 +74,7 @@ namespace GestionConcoursCore.Controllers
             return View(candidat);
         }
 
+
         public ActionResult Step2()
         {
             if (HttpContext.Session.GetString("cne") != null)
@@ -95,47 +96,53 @@ namespace GestionConcoursCore.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
-        public IActionResult Step2(Baccalaureat bac, IFormFile BacPdf)
+        public ActionResult Step2(Baccalaureat bac, IFormFile BacPdf)
         {
             if (ModelState.IsValid)
             {
-                // Récupérer le CNE depuis la session
                 string cne = HttpContext.Session.GetString("cne");
-                if (string.IsNullOrEmpty(cne))
+                var candidat = _db.Baccalaureats.Find(cne);
+
+                // Mise à jour des informations du Baccalauréat
+                candidat.TypeBac = bac.TypeBac;
+                candidat.DateObtentionBac = bac.DateObtentionBac;
+                candidat.NoteBac = bac.NoteBac;
+                candidat.MentionBac = bac.MentionBac;
+
+                if (BacPdf != null && BacPdf.Length > 0)
                 {
-                    return RedirectToAction("Login", "Auth");
+                    string pdfUploadFolder = Path.Combine("wwwroot", "baccalaureatPDFs");
+                    string pdfUniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(BacPdf.FileName)}";
+                    string pdfFilePath = Path.Combine(pdfUploadFolder, pdfUniqueFileName);
+
+                    // Créer le dossier s'il n'existe pas
+                    if (!Directory.Exists(pdfUploadFolder))
+                    {
+                        Directory.CreateDirectory(pdfUploadFolder);
+                    }
+
+                    // Télécharger le PDF
+                    using (var stream = new FileStream(pdfFilePath, FileMode.Create))
+                    {
+                        BacPdf.CopyTo(stream);
+                    }
+
+                    candidat.BacPdf = pdfUniqueFileName;
+                }
+                else
+                {
+                    candidat.BacPdf = "icon.pdf";
                 }
 
-                // Récupérer l'entrée existante du baccalauréat dans la base de données
-                var existingBac = _db.Baccalaureats.Find(cne);
-                if (existingBac == null)
-                {
-                    ModelState.AddModelError("", "Aucune donnée de baccalauréat trouvée pour ce CNE.");
-                    return View(bac);
-                }
 
-                // Vérification et traitement du fichier BacPdf
-             
-
-                // Mise à jour des autres propriétés
-                existingBac.TypeBac = bac.TypeBac;
-                existingBac.DateObtentionBac = bac.DateObtentionBac;
-                existingBac.NoteBac = bac.NoteBac;
-                existingBac.MentionBac = bac.MentionBac;
-
-                // Sauvegarder les modifications dans la base de données
+                // Enregistrer les modifications dans la base de données
                 _db.SaveChanges();
 
-                // Mettre à jour la session et rediriger vers l'étape suivante
                 HttpContext.Session.SetInt32("steps", 3);
                 return RedirectToAction("Step3");
             }
-
-            // Si le modèle n'est pas valide, retourner la vue avec les données actuelles
             return View(bac);
         }
-
 
         public ActionResult Step3()
         {
@@ -146,15 +153,6 @@ namespace GestionConcoursCore.Controllers
                 {
                     return RedirectToAction("Index", "Home");
                 }
-
-
-
-
-                
-
-
-
-
                 var diplome = _db.Diplomes.Find(HttpContext.Session.GetString("cne"));
                 var anne = _db.AnneeUniversitaires.Find(HttpContext.Session.GetString("cne"));
                 DiplomeNote dipNote = new DiplomeNote()
@@ -189,63 +187,112 @@ namespace GestionConcoursCore.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
-        public ActionResult Step3(DiplomeNote diplome)
+        public ActionResult Step3(DiplomeNote diplome, IFormFile DiplomePdf)
         {
             string cne = HttpContext.Session.GetString("cne");
+
             if (ModelState.IsValid)
             {
                 var x = _db.Diplomes.Where(c => c.Cne == cne).SingleOrDefault();
-                if (x == null)
-                {
-                    ModelState.AddModelError("", "Aucun diplôme trouvé pour ce CNE.");
-                    return View(diplome);
-                }
 
+                // Mise à jour des informations du diplôme
                 x.Type = diplome.Type;
                 x.Etablissement = diplome.Etablissement;
                 x.VilleObtention = diplome.VilleObtention;
                 x.NoteDiplome = diplome.NoteDiplome;
                 x.Specialite = diplome.Specialite;
 
-               
+                // Gestion du téléchargement du PDF
+                if (DiplomePdf != null && DiplomePdf.Length > 0)
+                {
+                    string pdfUploadFolder = Path.Combine("wwwroot", "NewFolder1");
+                    string pdfUniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(DiplomePdf.FileName)}";
+                    string pdfFilePath = Path.Combine(pdfUploadFolder, pdfUniqueFileName);
+
+                    // Créer le dossier s'il n'existe pas
+                    if (!Directory.Exists(pdfUploadFolder))
+                    {
+                        Directory.CreateDirectory(pdfUploadFolder);
+                    }
+
+                    // Télécharger le PDF
+                    using (var stream = new FileStream(pdfFilePath, FileMode.Create))
+                    {
+                        DiplomePdf.CopyTo(stream);
+                    }
+
+                    // Enregistrer le nom du fichier PDF dans le modèle
+                    x.DiplomePDF = pdfUniqueFileName; // Assurez-vous que la propriété DiplomePDF existe dans votre modèle
+                }
+                else
+                {
+                    x.DiplomePDF = "pdfUniqueFileName";
+                }
+
                 _db.SaveChanges();
 
-                // Mettez à jour les autres informations
+                // Mise à jour des informations d'année universitaire
                 var y = _db.AnneeUniversitaires.Where(a => a.Cne == cne).SingleOrDefault();
-                if (y != null)
+                y.Semestre1 = diplome.Semestre1;
+                y.Semestre2 = diplome.Semestre2;
+                y.Semestre3 = diplome.Semestre3;
+                y.Semestre4 = diplome.Semestre4;
+                y.Semestre5 = diplome.Semestre5;
+                y.Semestre6 = diplome.Semestre6;
+                y.Redoublant1 = diplome.Redoublant1;
+                y.Redoublant2 = diplome.Redoublant2;
+                y.Redoublant3 = diplome.Redoublant3;
+                y.AnneUni1 = diplome.AnneUni1;
+                y.AnneUni2 = diplome.AnneUni2;
+                y.AnneUni3 = diplome.AnneUni3;
+
+                _db.SaveChanges();
+
+                Candidat candidat = _db.Candidats.Find(HttpContext.Session.GetString("cne"));
+                candidat.Verified = 1;
+                _db.SaveChanges();
+
+                var z = _db.Candidats.Where(c => c.Cne == HttpContext.Session.GetString("cne")).SingleOrDefault();
+
+                var fromAddress = new MailAddress("admin@gmail.com", "From ENSAS");
+                var toAddress = new MailAddress(candidat.Email, "To Name");
+                const string fromPassword = "adminconcours125498";
+                const string subject = "Création de compte de postulation au concours ENSAS";
+                string body = z.Nom;
+
+                HttpContext.Session.SetInt32("verified", z.Verified);
+
+                var smtp = new SmtpClient
                 {
-                    y.Semestre1 = diplome.Semestre1;
-                    y.Semestre2 = diplome.Semestre2;
-                    y.Semestre3 = diplome.Semestre3;
-                    y.Semestre4 = diplome.Semestre4;
-                    y.Semestre5 = diplome.Semestre5;
-                    y.Semestre6 = diplome.Semestre6;
-                    y.Redoublant1 = diplome.Redoublant1;
-                    y.Redoublant2 = diplome.Redoublant2;
-                    y.Redoublant3 = diplome.Redoublant3;
-                    y.AnneUni1 = diplome.AnneUni1;
-                    y.AnneUni2 = diplome.AnneUni2;
-                    y.AnneUni3 = diplome.AnneUni3;
+                    Host = "smtp.gmail.com",
+                    Port = 587,
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                    Timeout = 60000
+                };
 
-                    _db.SaveChanges();
-                }
-
-                Candidat candidat = _db.Candidats.Find(cne);
-                if (candidat != null)
+                using (var message = new MailMessage(fromAddress, toAddress)
                 {
-                    candidat.Verified = 1;
-                    _db.SaveChanges();
+                    Subject = subject,
+                    Body = body
+                })
+                {
+                    try
+                    {
+                        message.IsBodyHtml = true;
+                        smtp.Send(message);
+                        return RedirectToAction("Index", "Home");
+                    }
+                    catch
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
                 }
-
-                // Envoi de l'e-mail
-                // ... (votre code d'envoi d'e-mail ici)
-
-                return RedirectToAction("Index", "Home");
             }
+
             return View(diplome);
         }
-
 
         public ActionResult Login()
         {

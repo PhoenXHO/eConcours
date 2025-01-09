@@ -24,10 +24,6 @@ namespace GestionConcoursCore.Services_User
             this.hostingEnvironment = hostingEnvironment;
         }
 
-        public Candidat getTotalCandidat(string cne)
-        {
-            return db.Candidats.Find(cne);
-        }
 
         //############################################ BACCALAUREAT  #########################################
 
@@ -42,7 +38,7 @@ namespace GestionConcoursCore.Services_User
                            MentionBac = b.MentionBac,
                            NoteBac = b.NoteBac,
                            TypeBac = b.TypeBac,
-                         
+                           BacPdf = b.BacPdf
                        }).SingleOrDefault();
 
             return bac;
@@ -54,18 +50,47 @@ namespace GestionConcoursCore.Services_User
             bac.DateObtentionBac = bac_saisi.DateObtentionBac;
             bac.MentionBac = bac_saisi.MentionBac;
             bac.NoteBac = bac_saisi.NoteBac;
-           
             bac.TypeBac = bac_saisi.TypeBac;
-           
 
             db.Update(bac);
             db.SaveChanges();
         }
-     
 
 
 
-      
+
+
+        public string uploadBACPdf(IFormFile file, string cne)
+        {
+            string response = "";
+            string uniqueFileName;
+            try
+            {
+                String extension = Path.GetExtension(file.FileName);
+                //se positionner dans le dossier
+                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "baccalaureatPDFs");
+                //make a unique filename
+                Random r = new Random();
+                int rInt = r.Next(0, 10000);
+                uniqueFileName = rInt.ToString() + extension.ToLower();
+                //définir le chemin complet
+                string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                //upload dans le fichier epreuve
+                FileStream stream = new FileStream(filePath, FileMode.Create);
+                file.CopyTo(stream);
+                stream.Close();
+                //Inserer le name dans la bd
+                var x = db.Baccalaureats.Where(c => c.Cne == cne).SingleOrDefault();
+                x.BacPdf = uniqueFileName;
+                db.SaveChanges();
+                response = uniqueFileName;
+            }
+            catch (Exception ex)
+            {
+                response = "aucunPDFBac.jpg";
+            }
+            return response;
+        }
 
         //############################################ Informations Personnelles  #########################################
 
@@ -97,41 +122,6 @@ namespace GestionConcoursCore.Services_User
             return info;
         }
 
-
-        public string uploadCinPdf(IFormFile file, string cne)
-        {
-            string response = "";
-            string uniqueFileName;
-            try
-            {
-                String extension = Path.GetExtension(file.FileName);
-                //se positionner dans le dossier
-                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "NewFolder");
-                //make a unique filename
-                Random r = new Random();
-                int rInt = r.Next(0, 10000);
-                uniqueFileName = rInt.ToString() + extension.ToLower();
-                //définir le chemin complet
-                string filePath = Path.Combine(uploadFolder, uniqueFileName);
-                //upload dans le fichier epreuve
-                FileStream stream = new FileStream(filePath, FileMode.Create);
-                file.CopyTo(stream);
-                stream.Close();
-                //Inserer le name dans la bd
-                var x = db.Candidats.Where(c => c.Cne == cne).SingleOrDefault();
-                x.CinPdf = uniqueFileName;
-                db.SaveChanges();
-                response = uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                response = "aucunPDFcin.jpg";
-            }
-            return response;
-        }
-
-
-
         public void setInfoPersonnel(CandidatModel saisi)
         {
             Candidat candidat = db.Candidats.Find(saisi.Cne);
@@ -149,6 +139,7 @@ namespace GestionConcoursCore.Services_User
             candidat.DateNaissance = saisi.DateNaissance;
             candidat.Nationalite = saisi.Nationalite;
 
+
             db.Update(candidat);
             db.SaveChanges();
         }
@@ -156,13 +147,13 @@ namespace GestionConcoursCore.Services_User
         //#################################################  FILIERE  #########################################
 
         public Filiere getFiliere(string cne)
-        {          
+        {
             var candidat = db.Candidats.Find(cne);
             var filiere = db.Filieres.Find(candidat.ID);
 
             string nom = filiere.Nom;
             return filiere;
-        
+
         }
 
         public void setFiliere(string cne, int ID)
@@ -199,7 +190,10 @@ namespace GestionConcoursCore.Services_User
                             Redoublant3 = a.Redoublant3,
                             AnneUni1 = a.AnneUni1,
                             AnneUni2 = a.AnneUni2,
-                            AnneUni3 = a.AnneUni3
+                            AnneUni3 = a.AnneUni3,
+
+                            //ajouté
+                            DiplomePDF = d.DiplomePDF
 
                         });
 
@@ -274,8 +268,8 @@ namespace GestionConcoursCore.Services_User
         public string checkDiplome(string cne)
         {
             string msg = "";
-            var f = db.Fichiers.Where(t => t.Cne==cne).SingleOrDefault();
-            if (f==null)
+            var f = db.Fichiers.Where(t => t.Cne == cne).SingleOrDefault();
+            if (f == null)
             {
                 msg = "Insérer votre diplome";
             }
@@ -302,15 +296,50 @@ namespace GestionConcoursCore.Services_User
             return msg;
         }
 
+        //ajouté
+        public string uploadDipPdf(IFormFile file, string cne)
+        {
+            string response = "";
+            string uniqueFileName;
+            try
+            {
+                String extension = Path.GetExtension(file.FileName);
+                //se positionner dans le dossier
+                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "NewFolder1");
+                //make a unique filename
+                Random r = new Random();
+                int rInt = r.Next(0, 10000);
+                uniqueFileName = rInt.ToString() + extension.ToLower();
+                //définir le chemin complet
+                string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                //upload dans le fichier epreuve
+                FileStream stream = new FileStream(filePath, FileMode.Create);
+                file.CopyTo(stream);
+                stream.Close();
+                //Inserer le name dans la bd
+                var x = db.Diplomes.Where(c => c.Cne == cne).SingleOrDefault();
+                x.DiplomePDF = uniqueFileName;
+                db.SaveChanges();
+                response = uniqueFileName;
+            }
+            catch (Exception ex)
+            {
+                response = "aucunPDFDip.jpg";
+            }
+            return response;
+        }
+
+        //##################################################    fonction    #########################################"
+
         public bool isNull(Object obj)
         {
-            bool isNull = obj.GetType().GetProperties().All(p => p.GetValue(obj, null) == null); 
+            bool isNull = obj.GetType().GetProperties().All(p => p.GetValue(obj, null) == null);
             return isNull;
         }
 
         public string uploadPicture(IFormFile file, string cne)
         {
-            string response="";
+            string response = "";
             string uniqueFileName;
             try
             {
@@ -339,6 +368,40 @@ namespace GestionConcoursCore.Services_User
             }
             return response;
         }
+        public string uploadCinPdf(IFormFile file, string cne)
+        {
+            string response = "";
+            string uniqueFileName;
+            try
+            {
+                String extension = Path.GetExtension(file.FileName);
+                //se positionner dans le dossier
+                string uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "NewFolder");
+                //make a unique filename
+                Random r = new Random();
+                int rInt = r.Next(0, 10000);
+                uniqueFileName = rInt.ToString() + extension.ToLower();
+                //définir le chemin complet
+                string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                //upload dans le fichier epreuve
+                FileStream stream = new FileStream(filePath, FileMode.Create);
+                file.CopyTo(stream);
+                stream.Close();
+                //Inserer le name dans la bd
+                var x = db.Candidats.Where(c => c.Cne == cne).SingleOrDefault();
+                x.CinPdf = uniqueFileName;
+                db.SaveChanges();
+                response = uniqueFileName;
+            }
+            catch (Exception ex)
+            {
+                response = "aucunPDFcin.jpg";
+            }
+            return response;
+        }
+
+
+
 
         public void uploadFichierScanne(IFormFile[] files, string cne)
         {
@@ -353,7 +416,7 @@ namespace GestionConcoursCore.Services_User
                     Random rand = new Random();
                     int rInt = rand.Next(0, 100000);
                     string saveName = cne + ext;
-                  //  string saveName = "diplome" + rInt.ToString() + ext;
+                    //  string saveName = "diplome" + rInt.ToString() + ext;
                     //  globalName += "diplome"+rInt.ToString()+ext+ "|";
                     var uploadFolder = Path.Combine(hostingEnvironment.WebRootPath, "DiplomeScanne");
                     string filePath = Path.Combine(uploadFolder, saveName);
@@ -370,7 +433,7 @@ namespace GestionConcoursCore.Services_User
             {
                 Fichier fichier = new Fichier();
                 fichier.Cne = cne;
-                fichier.nom =globalName;
+                fichier.nom = globalName;
                 db.Fichiers.Add(fichier);
                 db.SaveChanges();
             }
@@ -381,5 +444,24 @@ namespace GestionConcoursCore.Services_User
             }
         }
 
+        public Candidat getTotalCandidat(string cne)
+        {
+            // Vérifiez si `cne` est null ou vide
+            if (string.IsNullOrWhiteSpace(cne))
+            {
+                throw new ArgumentException("Le CNE ne peut pas être null ou vide.", nameof(cne));
+            }
+
+            // Récupérer le candidat correspondant au CNE
+            var candidat = db.Candidats.SingleOrDefault(c => c.Cne == cne);
+
+            // Vérifiez si le candidat a été trouvé
+            if (candidat == null)
+            {
+                throw new InvalidOperationException("Aucun candidat trouvé avec le CNE fourni.");
+            }
+
+            return candidat;
+        }
     }
 }

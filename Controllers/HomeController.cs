@@ -22,11 +22,11 @@ namespace GestionConcoursCore.Controllers
         private readonly IEpreuveService epreuve;
         private readonly IHostingEnvironment hostingEnvironment;
         private readonly IFiche fiche;
-        
+
 
         private readonly GestionConcourCoreDbContext _context;
 
-        public HomeController(GestionConcourCoreDbContext _context,IFiche fiche,ICandidatService candidat_service, IEpreuveService epreuve, IHostingEnvironment hostingEnvironment)
+        public HomeController(GestionConcourCoreDbContext _context, IFiche fiche, ICandidatService candidat_service, IEpreuveService epreuve, IHostingEnvironment hostingEnvironment)
         {
             this.candidat_service = candidat_service;
             this.epreuve = epreuve;
@@ -99,7 +99,6 @@ namespace GestionConcoursCore.Controllers
             return View(info);
         }
 
-
         [HttpPost]
         public IActionResult ModifierPersonnel(CandidatModel info)
         {
@@ -118,33 +117,15 @@ namespace GestionConcoursCore.Controllers
             string cne = HttpContext.Session.GetString("cne");
             if (file != null)
             {
-                response=candidat_service.uploadPicture(file, cne);
+                response = candidat_service.uploadPicture(file, cne);
                 HttpContext.Session.SetString("photo", response);
-            } 
+            }
             else
             {
                 response = "icon.jpg";
             }
             return Json(response);
         }
-
-
-
-
-
-        [HttpPost]
-        public ActionResult FichierScanne(IFormFile[] files)
-        {
-            string cne = HttpContext.Session.GetString("cne");
-            if (ModelState.IsValid)
-            {
-                candidat_service.uploadFichierScanne(files, cne);
-                ViewBag.UploadStatus = files.Count().ToString() + " files uploaded successfully.";
-            }
-            return View();
-        }
-
-
         [HttpPost]
         public JsonResult CinPdf(IFormFile file)
         {
@@ -166,10 +147,25 @@ namespace GestionConcoursCore.Controllers
             return Json(response);
         }
 
+
+
+
+        [HttpPost]
+        public ActionResult FichierScanne(IFormFile[] files)
+        {
+            string cne = HttpContext.Session.GetString("cne");
+            if (ModelState.IsValid)
+            {
+                candidat_service.uploadFichierScanne(files, cne);
+                ViewBag.UploadStatus = files.Count().ToString() + " files uploaded successfully.";
+            }
+            return View();
+        }
+
         //##############################################  BACCALAUREAT  ##################################################
 
         public IActionResult ModifierBac()
-        {            
+        {
 
             if (!isCandidat())
             {
@@ -178,21 +174,21 @@ namespace GestionConcoursCore.Controllers
 
             string cne = HttpContext.Session.GetString("cne");
             int? verified = HttpContext.Session.GetInt32("verified");
-            
+
             if (verified == 0)
             {
                 return RedirectToAction("Step1", "Auth");
             }
 
             BaccalaureatModel bac = candidat_service.getBaccalaureat(cne);
-          
+            ViewBag.BacPdf = bac.BacPdf;
 
             return View(bac);
         }
 
         [HttpPost]
         public IActionResult ModifierBac(BaccalaureatModel bac)
-        {            
+        {
             if (ModelState.IsValid)
             {
                 candidat_service.setBaccalaureat(bac);
@@ -203,7 +199,24 @@ namespace GestionConcoursCore.Controllers
         }
 
 
-      
+        [HttpPost]
+        public JsonResult BacPdf(IFormFile file)
+        {
+            string response = "";
+            string cne = HttpContext.Session.GetString("cne");
+
+            if (file != null && file.Length > 0)
+            {
+                response = candidat_service.uploadBACPdf(file, cne);
+                HttpContext.Session.SetString("BACPdf", response);
+            }
+            else
+            {
+                response = "aucunPDFBac.jpg"; // Assurez-vous que ce nom est cohérent avec la logique du frontend
+            }
+
+            return Json(response);
+        }
 
         //##############################################  FILIERE  ##################################################
 
@@ -221,15 +234,15 @@ namespace GestionConcoursCore.Controllers
             {
                 return RedirectToAction("Step1", "Auth");
             }
-           
-            
+
+
             var filiere = candidat_service.getFiliere(cne);
             ViewData["filiere"] = filiere.Nom;
 
-            return View(filiere); 
-            
+            return View(filiere);
+
         }
-       
+
 
         [HttpPost]
         public IActionResult ModifierFiliere(Filiere model)
@@ -237,7 +250,7 @@ namespace GestionConcoursCore.Controllers
             if (ModelState.IsValid)
             {
                 string cne = HttpContext.Session.GetString("cne");
-                candidat_service.setFiliere(cne,model.ID);
+                candidat_service.setFiliere(cne, model.ID);
                 TempData["message"] = "Filiere Modified succefully";
                 return RedirectToAction("Index");
             }
@@ -263,7 +276,7 @@ namespace GestionConcoursCore.Controllers
             ViewBag.niveau = HttpContext.Session.GetInt32("niveau");
             Debug.WriteLine("============================ " + HttpContext.Session.GetInt32("niveau"));
             DiplomeModel diplome = candidat_service.getDiplome(cne);
-            
+            ViewBag.DipPdf = diplome.DiplomePDF;
 
             return View(diplome);
         }
@@ -280,9 +293,24 @@ namespace GestionConcoursCore.Controllers
             return View(diplome);
         }
 
+        [HttpPost]
+        public JsonResult DipPdf(IFormFile file)
+        {
+            string response = "";
+            string cne = HttpContext.Session.GetString("cne");
 
-        
+            if (file != null && file.Length > 0)
+            {
+                response = candidat_service.uploadDipPdf(file, cne); // Assurez-vous que cette méthode fonctionne
+                HttpContext.Session.SetString("DipPdf", response);
+            }
+            else
+            {
+                response = "aucunPDFDip.jpg"; // Nom par défaut si aucun fichier n'est uploadé
+            }
 
+            return Json(response);
+        }
 
         public IActionResult FichierScanne()
         {
@@ -302,7 +330,7 @@ namespace GestionConcoursCore.Controllers
             return View();
         }
 
-        
+
 
         // ------------------- FICHE CONVOCATION
         public IActionResult Fiche(string id, string click = "empty")
@@ -358,7 +386,7 @@ namespace GestionConcoursCore.Controllers
             {
                 return RedirectToAction("Step1", "Auth");
             }
-            
+
             return View(epreuve.getEpreuves().ToList());
         }
 
@@ -406,8 +434,8 @@ namespace GestionConcoursCore.Controllers
                 TempData["download"] = "Une erreur a été rencontrée lors du téléchargement";
                 return RedirectToAction(nameof(Epreuve));
             }
-            
-                        
+
+
         }
 
 

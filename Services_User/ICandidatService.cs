@@ -26,14 +26,15 @@ namespace GestionConcoursCore.Services_User
 
         string checkConformity(string cne);
 
-        string uploadPicture(IFormFile file,string cne);
+        string uploadPicture(IFormFile file, string cne);
 
-        void uploadFichierScanne(IFormFile[] files,string cne);
+        void uploadFichierScanne(IFormFile[] files, string cne);
 
         string checkDiplome(string cne);
-        public string uploadCinPdf(IFormFile file, string cne);
-      
 
 
+        string uploadCinPdf(IFormFile cinPdf, string cne);
+        string uploadBACPdf(IFormFile file, string cne);
+        string uploadDipPdf(IFormFile file, string cne);
     }
 }

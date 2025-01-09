@@ -40,7 +40,29 @@
 
 
 
+
+
+
+
                         {
+                              <!-- Affichage de l'image de profil -->
+                            <div class="offset-5">
+                                <img src="@Url.Content("~/candidatImages/" + (ViewBag.photo ?? "icon.jpg"))" id="image" style="border-radius: 50%; width:150px; height:150px" />
+                            </div>
+                            <br />
+                            <div class="offset-2">
+                                <div class="row">
+                                    <div class="col-md-8 mb-3 showcase_content_area">
+                                        <label class="form-label">Photo de Profil</label>
+                                        <div class="custom-file">
+                                            <input type="file" class="form-control custom-file-input" id="input" name="imageUpload" accept="image/*" onchange="updateLabel(this, 'input')" style="width: 100%;">
+                                            <label class="custom-file-label" for="input">Choisir une photo</label>
+                                        </div>
+                                        <br />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row register-form">
                                 <div class="col-md-8 offset-2">
                                     <div class="form-group">
@@ -108,23 +130,7 @@
 
 
 
-                                    <!-- Affichage de l'image de profil -->
-                                    <div class="offset-5">
-                                        <img src="@Url.Content("~/candidatImages/" + (ViewBag.photo ?? "icon.jpg"))" id="image" style="border-radius: 50%; width:150px; height:150px" />
-                                    </div>
-                                    <br />
-                                    <div class="offset-2">
-                                        <div class="row">
-                                            <div class="col-md-8 mb-3 showcase_content_area">
-                                                <label class="form-label">Photo de Profil</label>
-                                                <div class="custom-file">
-                                                    <input type="file" class="form-control custom-file-input" id="input" name="imageUpload" accept="image/*" onchange="updateLabel(this, 'input')" style="width: 100%;">
-                                                    <label class="custom-file-label" for="input">Choisir une photo</label>
-                                                </div>
-                                                <br />
-                                            </div>
-                                        </div>
-                                    </div>
+                                  
                                     <div class="offset-2">
                                         <div class="row">
                                             <div class="col-md-8 mb-3 showcase_content_area">

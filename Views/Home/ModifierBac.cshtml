@@ -1,12 +1,13 @@
 ﻿@model GestionConcoursCore.ViewModels.BaccalaureatModel
 @{
     ViewData["Title"] = "Home Page";
+
     Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
 
 <div class="page-content-wrapper-inner" style="font-family:'Arial Rounded MT';">
     <div class="content-viewport">
-                
+
         <div class="container-fluid">
             <!-- USER DATA-->
             <div class="user-data m-b-40 ">
@@ -18,7 +19,42 @@
 
                 <hr class="col-md-8 offset-md-2 mb-5" />
 
-                <form asp-action="ModifierBac">
+
+                @if (!string.IsNullOrEmpty(@ViewBag.BacPdf))
+
+                {
+                    <div style="text-align: center;">
+                        <a id="pdfLinkBac" href="@Url.Content("../baccalaureatPDFs/" + @ViewBag.BacPdf)" target="_blank">Ouvrir le fichier BacPdf</a>
+                    </div>
+                }
+
+                else
+
+                {
+                    <div style="text-align: center;">
+                        <span id="noPdfMessageBac"></span>
+                    </div>
+                }
+
+                <div class="offset-2">
+                    <div class="row">
+                        <div class="col-md-8 mb-3 showcase_content_area">
+                            <div class="custom-file">
+                                <input type="file" class="form-control custom-file-input" id="pdfInputBac" name="BacPdfUpload" accept=".pdf">
+                                <label class="custom-file-label" for="pdfInputBac">Choisir un fichier PDF pour baccalauréat</label>
+                            </div>
+                            <br />
+                        </div>
+                        <br />
+                        <div class="col-xl-2 col-lg-3">
+                            <button class="btn btn-success px-4 btn-rounded" id="uploadPdfButtonBac">Upload fichier</button>
+                        </div>
+                    </div>
+                </div><br />
+
+
+
+                <form asp-action="ModifierBac" enctype="multipart/form-data">
 
                     <div class="row d-flex justify-content-center m-b-30">
                         <div class="col-md-6">
@@ -71,10 +107,6 @@
 
                                 </div>
 
-                               
-
-
-
                                 <div class="form-group">
                                     <div class="col-md-offset-2 col-md-12 d-flex justify-content-end">
                                         <input type="submit" value=" Enregistrer " class="btn btn-primary btn-rounded px-4 mt-2" />
@@ -93,4 +125,49 @@
 </div>
 
 
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#pdfInputBac').on('change', function () {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+        $("#uploadPdfButtonBac").click(function () {
+            var file = $("#pdfInputBac").get(0).files[0];
+            if (!file) {
+                alert("Veuillez sélectionner un fichier avant de télécharger.");
+                return; // Ne pas continuer si aucun fichier n'est sélectionné
+            }
+
+            var formData = new FormData();
+            formData.set("file", file, file.name);
+
+            $.ajax({
+                url: "/Home/BacPdf",
+                method: "post",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    console.log(response);
+                    if (response && response !== "aucunPDFBac.jpg") {
+                        $("#pdfLinkBac").attr("href", "../../baccalaureatPDFs/" + response);
+                        $("#pdfLinkBac").show(); // Montre le lien
+                        $("#noPdfMessageBac").hide(); // Cache le message d'absence de fichier
+                    } else {
+                        alert("Erreur lors du téléchargement du fichier.");
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("Une erreur s'est produite : " + textStatus);
+                }
+            });
+        });
+    });
+</script>
 

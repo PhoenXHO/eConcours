@@ -1,6 +1,7 @@
 ﻿@model GestionConcoursCore.ViewModels.DiplomeModel
 @{
     ViewData["Title"] = "Home Page";
+
     Layout = "~/Views/Shared/_UserLayout.cshtml";
 }
 
@@ -14,7 +15,50 @@
                     <div class="tab-content" id="myTabContent">
                         <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
 
+
+
+                            <hr class="col-md-8 offset-md-2 mb-5" />
+
+
+                            @if (!string.IsNullOrEmpty(@ViewBag.DipPdf))
+
+                            {
+                                <div style="text-align: center;">
+                                    <a id="pdfLinkDip" href="@Url.Content("../NewFolder1/" + @ViewBag.DipPdf)" target="_blank">Ouvrir le fichier diplome Pdf</a>
+                                </div>
+                            }
+
+                            else
+
+                            {
+                                <div style="text-align: center;">
+                                    <span id="noPdfMessageDip">Aucun fichier Diplome PDF disponible.</span>
+                                </div>
+                            }
+
+                            <div class="offset-2">
+                                <div class="row">
+                                    <div class="col-md-8 mb-3 showcase_content_area">
+                                        <div class="custom-file">
+                                            <input type="file" class="form-control custom-file-input" id="pdfInputDip" name="DipPdfUpload" accept=".pdf">
+                                            <label class="custom-file-label" for="pdfInputDip">Choisir un fichier PDF pour Diplome</label>
+                                        </div>
+                                        <br />
+                                    </div>
+                                    <br />
+                                    <div class="col-xl-2 col-lg-3">
+                                        <button class="btn btn-success px-4 btn-rounded" id="uploadPdfButtonDip">Upload fichier</button>
+                                    </div>
+                                </div>
+                            </div><br />
+
+
+
+
+
+
                             @using (Html.BeginForm("ModifierDiplome", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+
                             {
                                 @Html.HiddenFor(model => model.Cne)
                                 <div class="row register-form " style="padding-bottom: 40px">
@@ -28,32 +72,35 @@
                                             <h4 class="register-heading text-success">Diplome obtenu</h4><br />
 
                                             @if (ViewBag.niveau == 3)
+
                                             {
 
                                                 @Html.DropDownListFor(model => model.Type,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="DUT", Value="DUT"},
-                                                   new SelectListItem{Text="DEUG", Value="DEUG"},
-                                                   new SelectListItem{Text="Liscence Professionnelle - DUT", Value="Lic.pro-DUT"},
-                                                   new SelectListItem{Text="Liscence Professionnelle - DEUG", Value="Lic.pro-DEUG"},
-                                                   new SelectListItem{Text="Liscence Fondamentale - DUT", Value="Lic.fnd-DUT"},
-                                                   new SelectListItem{Text="Liscence Fondamentale - DEUG", Value="Lic.fnd-DEUG"},
-                                                   new SelectListItem{Text="Liscence ST - DUT", Value="Lic.st-DUT"},
-                                                   new SelectListItem{Text="Liscence ST - DEUG", Value="Lic.st-DEUG"}
-                                                }
-                                                , "-- Choix de type du Diplôme --", htmlAttributes: new { @class = "form-control " })
+                                                         new List<SelectListItem>
+                                        {
+                                        new SelectListItem{Text="DUT", Value="DUT"},
+                                        new SelectListItem{Text="DEUG", Value="DEUG"},
+                                        new SelectListItem{Text="Liscence Professionnelle - DUT", Value="Lic.pro-DUT"},
+                                        new SelectListItem{Text="Liscence Professionnelle - DEUG", Value="Lic.pro-DEUG"},
+                                        new SelectListItem{Text="Liscence Fondamentale - DUT", Value="Lic.fnd-DUT"},
+                                        new SelectListItem{Text="Liscence Fondamentale - DEUG", Value="Lic.fnd-DEUG"},
+                                        new SelectListItem{Text="Liscence ST - DUT", Value="Lic.st-DUT"},
+                                        new SelectListItem{Text="Liscence ST - DEUG", Value="Lic.st-DEUG"}
+                                        }
+                                                         , "-- Choix de type du Diplôme --", htmlAttributes: new { @class = "form-control " })
                                             }
+
                                             else
+
                                             {
                                                 @Html.DropDownListFor(model => model.Type,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="Liscence Professionnelle", Value="Lic.pro"},
-                                                   new SelectListItem{Text="Liscence Fondamentale", Value="Lic.fnd"},
-                                                   new SelectListItem{Text="Liscence Sciences et Techniques", Value="Lic.st"}
-                                                }
-                                                , "-- Choix de type du Diplôme --", htmlAttributes: new { @class = "form-control " })
+                                                         new List<SelectListItem>
+                                        {
+                                        new SelectListItem{Text="Liscence Professionnelle", Value="Lic.pro"},
+                                        new SelectListItem{Text="Liscence Fondamentale", Value="Lic.fnd"},
+                                        new SelectListItem{Text="Liscence Sciences et Techniques", Value="Lic.st"}
+                                        }
+                                                         , "-- Choix de type du Diplôme --", htmlAttributes: new { @class = "form-control " })
                                             }
 
                                             @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
@@ -73,14 +120,14 @@
                                         <div class="form-group">
 
                                             @Html.DropDownListFor(model => model.Etablissement,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="École Supérieure de Technologie EST", Value="EST"},
-                                                   new SelectListItem{Text="Faculté des Sciences et Techniques FST", Value="FST"},
-                                                   new SelectListItem{Text="Faculté Polydisciplinaire FP", Value="FP"},
-                                                   new SelectListItem{Text="Faculté des Sciences FS", Value="FS"}
-                                                }
-                                                , "-- Choix d'Etablissement --", htmlAttributes: new { @class = "form-control " })
+                                                     new List<SelectListItem>
+                                        {
+                                        new SelectListItem{Text="École Supérieure de Technologie EST", Value="EST"},
+                                        new SelectListItem{Text="Faculté des Sciences et Techniques FST", Value="FST"},
+                                        new SelectListItem{Text="Faculté Polydisciplinaire FP", Value="FP"},
+                                        new SelectListItem{Text="Faculté des Sciences FS", Value="FS"}
+                                        }
+                                                     , "-- Choix d'Etablissement --", htmlAttributes: new { @class = "form-control " })
                                             @Html.ValidationMessageFor(model => model.Etablissement, "", new { @class = "text-danger" })
 
                                         </div>
@@ -100,39 +147,39 @@
                                     <div class="col-sm-3 offset-sm-1 mt-3">
 
                                         @Html.DropDownListFor(model => model.AnneUni1,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="2014/2015", Value="2014/2015"},
-                                                   new SelectListItem{Text="2015/2016", Value="2015/2016"},
-                                                   new SelectListItem{Text="2016/2017", Value="2016/2017"},
-                                                   new SelectListItem{Text="2017/2018", Value="2017/2018"},
-                                                   new SelectListItem{Text="2018/2019", Value="2018/2019"}
-                                                }
-                                                , "Année universitaire 1", htmlAttributes: new { @class = "form-control " })
+                                                 new List<SelectListItem>
+                                    {
+                                    new SelectListItem{Text="2014/2015", Value="2014/2015"},
+                                    new SelectListItem{Text="2015/2016", Value="2015/2016"},
+                                    new SelectListItem{Text="2016/2017", Value="2016/2017"},
+                                    new SelectListItem{Text="2017/2018", Value="2017/2018"},
+                                    new SelectListItem{Text="2018/2019", Value="2018/2019"}
+                                    }
+                                                 , "Année universitaire 1", htmlAttributes: new { @class = "form-control " })
                                         @Html.ValidationMessageFor(model => model.AnneUni1, "", new { @class = "text-danger" })
                                         <br />
                                         @Html.DropDownListFor(model => model.AnneUni2,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="2015/2016", Value="2015/2016"},
-                                                   new SelectListItem{Text="2016/2017", Value="2016/2017"},
-                                                   new SelectListItem{Text="2017/2018", Value="2017/2018"},
-                                                   new SelectListItem{Text="2018/2019", Value="2018/2019"},
-                                                   new SelectListItem{Text="2019/2020", Value="2019/2020"}
-                                                }
-                                                , "Année universitaire 2", htmlAttributes: new { @class = "form-control " })
+                                                 new List<SelectListItem>
+                                    {
+                                    new SelectListItem{Text="2015/2016", Value="2015/2016"},
+                                    new SelectListItem{Text="2016/2017", Value="2016/2017"},
+                                    new SelectListItem{Text="2017/2018", Value="2017/2018"},
+                                    new SelectListItem{Text="2018/2019", Value="2018/2019"},
+                                    new SelectListItem{Text="2019/2020", Value="2019/2020"}
+                                    }
+                                                 , "Année universitaire 2", htmlAttributes: new { @class = "form-control " })
                                         @Html.ValidationMessageFor(model => model.AnneUni2, "", new { @class = "text-danger" })
                                         <br />
                                         @Html.DropDownListFor(model => model.AnneUni3,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="2015/2016", Value="2015/2016"},
-                                                   new SelectListItem{Text="2016/2017", Value="2016/2017"},
-                                                   new SelectListItem{Text="2017/2018", Value="2017/2018"},
-                                                   new SelectListItem{Text="2018/2019", Value="2018/2019"},
-                                                   new SelectListItem{Text="2019/2020", Value="2019/2020"}
-                                                }
-                                                , "Année universitaire 3", htmlAttributes: new { @class = "form-control " })
+                                                 new List<SelectListItem>
+                                    {
+                                    new SelectListItem{Text="2015/2016", Value="2015/2016"},
+                                    new SelectListItem{Text="2016/2017", Value="2016/2017"},
+                                    new SelectListItem{Text="2017/2018", Value="2017/2018"},
+                                    new SelectListItem{Text="2018/2019", Value="2018/2019"},
+                                    new SelectListItem{Text="2019/2020", Value="2019/2020"}
+                                    }
+                                                 , "Année universitaire 3", htmlAttributes: new { @class = "form-control " })
                                         @Html.ValidationMessageFor(model => model.AnneUni3, "", new { @class = "text-danger" })
 
                                         <br />
@@ -143,32 +190,32 @@
                                     <div class="col-sm-3 mt-3">
 
                                         @Html.DropDownListFor(model => model.Redoublant1,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="Oui", Value="Oui"},
-                                                   new SelectListItem{Text="Non", Value="Non"}
-                                                }
-                                                , "Redoublant", htmlAttributes: new { @class = "form-control " })
+                                                 new List<SelectListItem>
+                                    {
+                                    new SelectListItem{Text="Oui", Value="Oui"},
+                                    new SelectListItem{Text="Non", Value="Non"}
+                                    }
+                                                 , "Redoublant", htmlAttributes: new { @class = "form-control " })
                                         @Html.ValidationMessageFor(model => model.Redoublant1, "", new { @class = "text-danger" })
                                         <br />
 
                                         @Html.DropDownListFor(model => model.Redoublant2,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="Oui", Value="Oui"},
-                                                   new SelectListItem{Text="Non", Value="Non"}
-                                                }
-                                                , "Redoublant", htmlAttributes: new { @class = "form-control " })
+                                                 new List<SelectListItem>
+                                    {
+                                    new SelectListItem{Text="Oui", Value="Oui"},
+                                    new SelectListItem{Text="Non", Value="Non"}
+                                    }
+                                                 , "Redoublant", htmlAttributes: new { @class = "form-control " })
                                         @Html.ValidationMessageFor(model => model.Redoublant2, "", new { @class = "text-danger" })
                                         <br />
 
                                         @Html.DropDownListFor(model => model.Redoublant3,
-                                                new List<SelectListItem>
-                                                {
-                                                   new SelectListItem{Text="Oui", Value="Oui"},
-                                                   new SelectListItem{Text="Non", Value="Non"}
-                                                }
-                                                , "Redoublant", htmlAttributes: new { @class = "form-control " })
+                                                 new List<SelectListItem>
+                                    {
+                                    new SelectListItem{Text="Oui", Value="Oui"},
+                                    new SelectListItem{Text="Non", Value="Non"}
+                                    }
+                                                 , "Redoublant", htmlAttributes: new { @class = "form-control " })
                                         @Html.ValidationMessageFor(model => model.Redoublant3, "", new { @class = "text-danger" })
 
 
@@ -214,21 +261,6 @@
                                     </div>
                                 </div>
 
-
-
-
-
-
-
-
-                               
-
-                                
-
-
-
-
-
                                 <div class="col-md-8 offset-2 ">
                                     <div class="form-group text-center">
                                         <br /><br />
@@ -236,7 +268,9 @@
 
                                     </div>
                                 </div>
-                                <br /><br />
+                                <br />
+
+                                <br />
 
 
                             }
@@ -286,6 +320,54 @@
             }
         }
 
+    });
+</script>
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#pdfInputDip').on('change', function () {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).next('.custom-file-label').html(fileName); // Met à jour le label
+        });
+
+        $("#uploadPdfButtonDip").click(function () {
+            var file = $("#pdfInputDip").get(0).files[0];
+            if (!file) {
+                alert("Veuillez sélectionner un fichier avant de télécharger.");
+                return; // Ne pas continuer si aucun fichier n'est sélectionné
+            }
+
+            var formData = new FormData();
+            formData.set("file", file, file.name);
+
+            $.ajax({
+                url: "/Home/DipPdf", // Assurez-vous que cette URL est correcte
+                method: "post",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    console.log(response);
+                    if (response && response !== "aucunPDFDip.jpg") {
+                        $("#pdfLinkDip").attr("href", "../../NewFolder1/" + response); // Met à jour le lien
+                        $("#pdfLinkDip").show(); // Affiche le lien
+                        $("#noPdfMessageDip").hide(); // Cache le message d'absence de fichier
+                    } else {
+                        alert("Erreur lors du téléchargement du fichier.");
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("Une erreur s'est produite : " + textStatus);
+                }
+            });
+        });
     });
 </script>
 

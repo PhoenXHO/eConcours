@@ -40,6 +40,7 @@ namespace GestionConcoursCore.ViewModels
         public string Redoublant3 { get; set; }
         public double Semestre5 { get; set; }
         public double Semestre6 { get; set; }
+        public string DiplomePDF { get; set; }
 
     }
 }

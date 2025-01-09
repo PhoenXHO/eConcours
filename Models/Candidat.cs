@@ -41,6 +41,8 @@ namespace GestionConcoursCore.Models
         public int Verified { get; set; }
         public string Password { get; set; }
         public string Matricule { get; set; }
+       
+        
         public Boolean Presence { get; set; }
         public Boolean Conforme { get; set; }
         public Boolean listDatt { get; set; }

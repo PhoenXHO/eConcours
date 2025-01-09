@@ -17,7 +17,7 @@ namespace GestionConcoursCore.Models
         public string VilleObtention { get; set; }
         public double NoteDiplome { get; set; }
         public string Specialite { get; set; }
-       
+        public string DiplomePDF { get; set; }
 
 
         public virtual Candidat Candidat { get; set; }
